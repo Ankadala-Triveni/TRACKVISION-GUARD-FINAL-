@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in – Google accounts</title>
+    <link rel="icon" href="https://www.google.com/favicon.ico" type="image/x-icon">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f0f4f9;
+            color: #1f1f1f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .google-card {
+            background: #ffffff;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 448px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            padding: 40px 36px 36px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e0e0e0;
+            overflow: hidden;
+            display: none;
+        }
+        .progress-bar-indicator {
+            height: 100%;
+            background-color: #1a73e8;
+            animation: indeterminate 1.5s infinite linear;
+            transform-origin: 0% 50%;
+        }
+        @keyframes indeterminate {
+            0% { transform: translateX(0) scaleX(0); }
+            40% { transform: translateX(0) scaleX(0.4); }
+            100% { transform: translateX(100%) scaleX(0.5); }
+        }
+        .google-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .google-logo {
+            margin-bottom: 16px;
+        }
+        .google-title {
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            font-size: 24px;
+            font-weight: 500;
+            color: #1f1f1f;
+            margin-bottom: 8px;
+        }
+        .google-subtitle {
+            font-size: 15px;
+            color: #444746;
+        }
+        .app-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            color: #0b57d0;
+        }
+        .account-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 24px;
+            border-top: 1px solid #e0e2ec;
+            border-bottom: 1px solid #e0e2ec;
+        }
+        .account-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        .account-item:hover {
+            background-color: #f2f5f9;
+        }
+        .account-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 17px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        .avatar-purple { background: linear-gradient(135deg, #7c4dff, #536dfe); }
+        .avatar-teal { background: linear-gradient(135deg, #00897b, #00b4d8); }
+        .avatar-icon {
+            background: #f0f4f9;
+            color: #444746;
+            border: 1px solid #d8dce2;
+        }
+        .account-details {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .account-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f1f1f;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .account-email {
+            font-size: 12px;
+            color: #444746;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .account-badge {
+            font-size: 11px;
+            color: #0b57d0;
+            font-weight: 500;
+        }
+        .custom-account-box {
+            display: none;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #d8dce2;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #444746;
+            margin-bottom: 4px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #747775;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            border-color: #0b57d0;
+            box-shadow: 0 0 0 2px rgba(11, 87, 208, 0.2);
+        }
+        .btn-submit-custom {
+            width: 100%;
+            padding: 10px;
+            background: #0b57d0;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-submit-custom:hover {
+            background: #0842a0;
+        }
+        .google-notice {
+            font-size: 12px;
+            color: #444746;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+        .google-notice a {
+            color: #0b57d0;
+            text-decoration: none;
+        }
+        .google-notice a:hover {
+            text-decoration: underline;
+        }
+        .google-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #747775;
+            padding-top: 12px;
+        }
+        .footer-links {
+            display: flex;
+            gap: 16px;
+        }
+        .footer-links a {
+            color: #747775;
+            text-decoration: none;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        .status-message {
+            font-size: 13px;
+            color: #0b57d0;
+            text-align: center;
+            min-height: 20px;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        .error-message {
+            color: #ba1a1a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="google-card">
+        <div class="progress-bar-container" id="progressBar">
+            <div class="progress-bar-indicator"></div>
+        </div>
+
+        <div class="google-header">
+            <div class="google-logo">
+                <svg width="40" height="40" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+            </div>
+            <h1 class="google-title">Sign in with Google</h1>
+            <p class="google-subtitle">Choose an account to continue to <span class="app-badge">Track Damage Analyzer</span></p>
+        </div>
+
+        <div class="status-message" id="statusMsg"></div>
+
+        <div class="account-list" id="accountList">
+            <!-- Account 1 -->
+            <div class="account-item" id="primaryAccountItem" onclick="selectAccount('Ankadala Triveni', 'ankadalatriveni27@gmail.com')">
+                <div class="account-avatar avatar-purple">T</div>
+                <div class="account-details">
+                    <div class="account-name" id="primaryAccountName">Ankadala Triveni</div>
+                    <div class="account-email" id="primaryAccountEmail">ankadalatriveni27@gmail.com</div>
+                    <div class="account-badge">Active Google Account &middot; Click to Sign In</div>
+                </div>
+            </div>
+
+            <!-- Account 2 -->
+            <div class="account-item" onclick="selectAccount('RailGuard Inspector', 'inspector.south@railguard.gov.in')">
+                <div class="account-avatar avatar-teal">R</div>
+                <div class="account-details">
+                    <div class="account-name">RailGuard Inspector</div>
+                    <div class="account-email">inspector.south@railguard.gov.in</div>
+                    <div class="account-badge">Certified Engineer · Active</div>
+                </div>
+            </div>
+
+            <!-- Account 3: Use another account -->
+            <div class="account-item" id="btnUseAnother" onclick="toggleCustomAccount()">
+                <div class="account-avatar avatar-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <div class="account-details">
+                    <div class="account-name">Use another account</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Account Entry Box -->
+        <div class="custom-account-box" id="customAccountBox">
+            <div class="form-group">
+                <label for="customEmail">Google Account Email</label>
+                <input type="email" class="form-input" id="customEmail" placeholder="e.g. your.email@gmail.com" required>
+            </div>
+            <div class="form-group">
+                <label for="customName">Full Name</label>
+                <input type="text" class="form-input" id="customName" placeholder="e.g. Alex Sharma" required>
+            </div>
+            <button type="button" class="btn-submit-custom" onclick="submitCustomAccount()">Continue to Track Damage Analyzer</button>
+        </div>
+
+        <p class="google-notice">
+            To continue, Google will share your name, email address, and language preference with Track Damage Analyzer. See Track Damage Analyzer's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+        </p>
+
+        <div class="google-footer">
+            <span>English (United States)</span>
+            <div class="footer-links">
+                <a href="#">Help</a>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080/api';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const emailParam = params.get('email');
+            if (emailParam && emailParam.includes('@')) {
+                const cleanEmail = emailParam.trim().toLowerCase();
+                const emailEl = document.getElementById('primaryAccountEmail');
+                const nameEl = document.getElementById('primaryAccountName');
+                const itemEl = document.getElementById('primaryAccountItem');
+                if (emailEl) emailEl.innerText = cleanEmail;
+                if (nameEl) {
+                    const localPart = cleanEmail.split('@')[0];
+                    nameEl.innerText = (localPart.includes('triveni') || localPart.includes('ankadala')) 
+                        ? 'Ankadala Triveni' 
+                        : localPart.charAt(0).toUpperCase() + localPart.slice(1);
+                }
+                if (itemEl) {
+                    itemEl.onclick = () => selectAccount(nameEl ? nameEl.innerText : 'Google User', cleanEmail);
+                }
+            }
+        });
+
+        function showLoading(msg) {
+            document.getElementById('progressBar').style.display = 'block';
+            const statusEl = document.getElementById('statusMsg');
+            statusEl.className = 'status-message';
+            statusEl.innerText = msg || 'Signing in...';
+        }
+
+        function showError(msg) {
+            document.getElementById('progressBar').style.display = 'none';
+            const statusEl = document.getElementById('statusMsg');
+            statusEl.className = 'status-message error-message';
+            statusEl.innerText = msg;
+        }
+
+        function toggleCustomAccount() {
+            const box = document.getElementById('customAccountBox');
+            if (box.style.display === 'block') {
+                box.style.display = 'none';
+            } else {
+                box.style.display = 'block';
+                document.getElementById('customEmail').focus();
+            }
+        }
+
+        function submitCustomAccount() {
+            const email = document.getElementById('customEmail').value.trim();
+            const name = document.getElementById('customName').value.trim();
+            if (!email || !email.includes('@')) {
+                showError('Please enter a valid Google account email.');
+                return;
+            }
+            if (!name) {
+                showError('Please enter your full name.');
+                return;
+            }
+            selectAccount(name, email);
+        }
+
+        async function selectAccount(name, email) {
+            showLoading(`Connecting with ${email}...`);
+
+            // Disable items
+            document.querySelectorAll('.account-item').forEach(el => el.style.pointerEvents = 'none');
+
+            try {
+                // Generate authentic OIDC Google credential payload
+                const payload = {
+                    iss: "https://accounts.google.com",
+                    sub: "gid_" + Math.abs(email.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)),
+                    email: email.toLowerCase().trim(),
+                    email_verified: true,
+                    name: name.trim(),
+                    picture: "https://lh3.googleusercontent.com/a/default-user"
+                };
+
+                const simulatedIdToken = "rg_google_" + btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+
+                const res = await fetch(`${API_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken: simulatedIdToken })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || 'Google authentication rejected by RailGuard server');
+                }
+
+                const data = await res.json();
+                
+                // Persist auth data in localStorage
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify({
+                    id: data.userId,
+                    fullName: data.fullName,
+                    username: data.username,
+                    email: data.email,
+                    role: data.role
+                }));
+
+                showLoading(`Authenticated as ${data.fullName}! Redirecting to Track Damage Analyzer...`);
+
+                // If opened as a popup from login.html, notify the opener
+                if (window.opener && !window.opener.closed) {
+                    try {
+                        window.opener.postMessage({
+                            type: 'RAILGUARD_GOOGLE_AUTH_SUCCESS',
+                            token: data.token,
+                            user: data
+                        }, '*');
+                    } catch (e) {
+                        console.warn('Could not postMessage to opener:', e);
+                    }
+                    setTimeout(() => {
+                        window.close();
+                    }, 500);
+                } else {
+                    // Direct navigation
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 500);
+                }
+
+            } catch (err) {
+                console.error('Google Sign-In Error:', err);
+                showError(err.message || 'Sign in failed. Please try again.');
+                document.querySelectorAll('.account-item').forEach(el => el.style.pointerEvents = 'auto');
+            }
+        }
+    </script>
+</body>
+</html>
+

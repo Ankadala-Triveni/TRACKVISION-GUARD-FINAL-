@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Success – RailGuard AI</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="../css/auth.css" rel="stylesheet">
+    <link href="../css/dashboard.css" rel="stylesheet">
+    <style>
+        .success-container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .dashboard-card {
+            background: rgba(13, 17, 23, 0.85);
+            border: 1px solid var(--rg-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            backdrop-filter: blur(25px);
+            box-shadow: var(--rg-glow), 0 20px 50px rgba(0,0,0,0.5);
+            margin-bottom: 2rem;
+        }
+        .role-badge {
+            display: inline-block;
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            color: #c084fc;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.35rem 0.85rem;
+            border-radius: 30px;
+            letter-spacing: 0.5px;
+        }
+        .api-card {
+            background: var(--rg-surface-2);
+            border: 1px solid var(--rg-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.25s ease;
+        }
+        .api-card:hover {
+            border-color: var(--rg-primary);
+        }
+        .console-output {
+            background: #020617;
+            color: #38bdf8;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-top: 1rem;
+        }
+        .security-warning {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #fde047;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <!-- Mobile Sidebar Dark Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- App Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar">
+        <!-- Sidebar Brand -->
+        <div class="sidebar-header">
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-train-front"></i>
+            </div>
+            <div>
+                <h1 class="brand-title">RailGuard AI</h1>
+                <div class="text-muted" style="font-size: 0.72rem; letter-spacing: 0.5px;">SAFETY MONITORING</div>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <div class="sidebar-menu">
+            <div class="sidebar-label">Operations</div>
+            <a href="dashboard.html" class="nav-link-rg">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="inspection.html" class="nav-link-rg">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span>Upload &amp; Analyze</span>
+            </a>
+            <a href="inspection-history.html" class="nav-link-rg">
+                <i class="bi bi-clock-history"></i>
+                <span>Inspection History</span>
+            </a>
+            <a href="map.html" class="nav-link-rg">
+                <i class="bi bi-geo-alt"></i>
+                <span>Defect Location Map</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Intelligence &amp; Actions</div>
+            <a href="analytics.html" class="nav-link-rg">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="maintenance.html" class="nav-link-rg">
+                <i class="bi bi-wrench-adjustable"></i>
+                <span>Maintenance</span>
+            </a>
+            <a href="reports.html" class="nav-link-rg">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Reports</span>
+            </a>
+
+            <div class="sidebar-label mt-3">System Console</div>
+            <a href="auth-success.html" class="nav-link-rg active">
+                <i class="bi bi-shield-check"></i>
+                <span>Security Console</span>
+            </a>
+            <a href="#" class="nav-link-rg text-danger action-logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+        <!-- Sidebar Footer / User Profile -->
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                    <div class="user-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="text-truncate">
+                        <div class="fw-semibold text-white small text-truncate" id="user-name">Inspector</div>
+                        <span class="role-badge" id="user-role">INSPECTOR</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger btn-sm p-1 px-2 action-logout" title="Sign Out">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+        <!-- Top Bar -->
+        <header class="dashboard-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="mobile-navbar-btn" id="mobile-sidebar-toggle" aria-label="Toggle Navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div>
+                    <h2 class="h4 fw-bold text-white font-outfit mb-0">System Security Console</h2>
+                    <p class="text-muted small mb-0 d-none d-sm-block">JWT token verification, role-based endpoint testing, and cryptographic access audit</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <div class="telemetry-chip d-none d-md-inline-flex" title="Spring Boot Core Status">
+                    <span class="pulse-dot"></span>
+                    <span class="text-white small fw-medium">Core :8080</span>
+                </div>
+                <a href="dashboard.html" class="btn btn-rg btn-sm me-2">
+                    <i class="bi bi-grid-1x2-fill me-1"></i> Dashboard
+                </a>
+            </div>
+        </header>
+
+        <div class="success-container w-100">
+
+        <!-- User Information Card -->
+        <div class="dashboard-card">
+            <h3 class="mb-4 text-white font-outfit"><i class="bi bi-person-circle me-2 text-primary"></i> Currently Authenticated User</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Full Name</label>
+                    <div class="h5 text-white" id="user-fullname">-</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Username</label>
+                    <div class="h5 text-white" id="user-username">-</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Email Address</label>
+                    <div class="h5 text-white" id="user-email">-</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Assigned Role</label>
+                    <div><span class="role-badge" id="user-role">-</span></div>
+                </div>
+            </div>
+
+            <div class="security-warning">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Security Tradeoff Document:</strong> JWT is stored in <code>localStorage</code>. While highly convenient for decoupled single-page application setups and cross-domain APIs, it is vulnerable to Cross-Site Scripting (XSS) if malicious scripts are injected. For production environments, storing the token in HTTP-Only, Secure, SameSite=Strict cookies is recommended to block script access entirely.
+            </div>
+        </div>
+
+        <!-- Role Authorization Testing Dashboard -->
+        <div class="dashboard-card">
+            <h3 class="mb-4 text-white font-outfit"><i class="bi bi-lock me-2 text-primary"></i> Role Authorization Test APIs</h3>
+            <p class="text-muted mb-4">Click each test button to trigger a network request. The console will display the HTTP response code and payload.</p>
+
+            <div class="row g-3">
+                <!-- Endpoint: Authenticated -->
+                <div class="col-md-6">
+                    <div class="api-card">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-primary">GET</span>
+                            <code>/api/test/authenticated</code>
+                        </div>
+                        <p class="text-muted small">Access permitted to any user holding a valid session token.</p>
+                        <button class="btn btn-rg py-2" onclick="testEndpoint('authenticated')">Trigger Test</button>
+                        <div class="console-output d-none" id="console-authenticated"></div>
+                    </div>
+                </div>
+
+                <!-- Endpoint: Admin -->
+                <div class="col-md-6">
+                    <div class="api-card">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-danger">GET</span>
+                            <code>/api/test/admin</code>
+                        </div>
+                        <p class="text-muted small">Only granted to members assigned the <code>ADMIN</code> role.</p>
+                        <button class="btn btn-rg py-2" onclick="testEndpoint('admin')">Trigger Test</button>
+                        <div class="console-output d-none" id="console-admin"></div>
+                    </div>
+                </div>
+
+                <!-- Endpoint: Inspector -->
+                <div class="col-md-6">
+                    <div class="api-card">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-warning text-dark">GET</span>
+                            <code>/api/test/inspector</code>
+                        </div>
+                        <p class="text-muted small">Granted to users registered under the <code>INSPECTOR</code> role.</p>
+                        <button class="btn btn-rg py-2" onclick="testEndpoint('inspector')">Trigger Test</button>
+                        <div class="console-output d-none" id="console-inspector"></div>
+                    </div>
+                </div>
+
+                <!-- Endpoint: Engineer -->
+                <div class="col-md-6">
+                    <div class="api-card">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-info text-dark">GET</span>
+                            <code>/api/test/engineer</code>
+                        </div>
+                        <p class="text-muted small">Granted to users registered under the <code>ENGINEER</code> role.</p>
+                        <button class="btn btn-rg py-2" onclick="testEndpoint('engineer')">Trigger Test</button>
+                        <div class="console-output d-none" id="console-engineer"></div>
+                    </div>
+                </div>
+
+                <!-- Endpoint: Maintenance -->
+                <div class="col-md-6">
+                    <div class="api-card">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-success">GET</span>
+                            <code>/api/test/maintenance</code>
+                        </div>
+                        <p class="text-muted small">Granted to users registered under the <code>MAINTENANCE</code> role.</p>
+                        <button class="btn btn-rg py-2" onclick="testEndpoint('maintenance')">Trigger Test</button>
+                        <div class="console-output d-none" id="console-maintenance"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script to execute requests -->
+    </div><!-- /.success-container -->
+    </main><!-- /.app-main -->
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/navigation.js"></script>
+    <script>
+        const API_URL = 'http://localhost:8080/api';
+        const token = localStorage.getItem('token');
+
+        // Check if token exists
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // Fetch /api/auth/me immediately
+        async function loadSecurityProfile() {
+            if (!token) return;
+            try {
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Authentication invalid or expired');
+                }
+
+                const user = await response.json();
+                const fnEl = document.getElementById('user-fullname');
+                const unEl = document.getElementById('user-username');
+                const emEl = document.getElementById('user-email');
+                const roEl = document.getElementById('user-role');
+                if (fnEl) fnEl.innerText = user.fullName || '-';
+                if (unEl) unEl.innerText = user.username || '-';
+                if (emEl) emEl.innerText = user.email || '-';
+                if (roEl) roEl.innerText = user.role || '-';
+            } catch (err) {
+                console.error('Security console error:', err);
+            }
+        }
+        loadSecurityProfile();
+
+        // Logout handled automatically by navigation.js (.action-logout)
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            });
+        }
+
+        // Test roles endpoints
+        async function testEndpoint(endpoint) {
+            const consoleDiv = document.getElementById(`console-${endpoint}`);
+            consoleDiv.classList.remove('d-none');
+            consoleDiv.innerText = 'Sending Request...';
+            
+            try {
+                const res = await fetch(`${API_URL}/test/${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const status = res.status;
+                const data = await res.json();
+                
+                consoleDiv.innerText = `HTTP ${status}\n${JSON.stringify(data, null, 2)}`;
+                if (status === 200) {
+                    consoleDiv.style.color = '#34d399'; // Green text
+                } else if (status === 403) {
+                    consoleDiv.style.color = '#f87171'; // Red text
+                } else {
+                    consoleDiv.style.color = '#fbbf24'; // Orange text
+                }
+            } catch (err) {
+                consoleDiv.innerText = `Network Error:\n${err.message}`;
+                consoleDiv.style.color = '#f87171';
+            }
+        }
+    </script>
+</body>
+</html>

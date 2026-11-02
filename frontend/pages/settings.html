@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TRACK DAMAGE ANALYZER – System Settings & AI Inspection Configuration Console">
+    <title>Settings – TRACK DAMAGE ANALYZER</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="../css/dashboard.css" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+
+    <!-- Mobile Drawer Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="app-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-train-front"></i>
+            </div>
+            <div>
+                <h1 class="brand-title">TRACK DAMAGE ANALYZER</h1>
+                <div class="text-muted" style="font-size: 0.68rem; letter-spacing: 0.5px; line-height: 1.2;">AI-Powered Railway Track Defect Detection, Geospatial Inspection, Risk Assessment and Maintenance Management</div>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <div class="sidebar-label">Operations</div>
+            <a href="dashboard.html" class="nav-link-rg">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="inspection.html" class="nav-link-rg">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span>New Inspection</span>
+            </a>
+            <a href="inspection.html#results" class="nav-link-rg">
+                <i class="bi bi-clipboard2-pulse"></i>
+                <span>Inspection Results</span>
+            </a>
+            <a href="map.html" class="nav-link-rg">
+                <i class="bi bi-geo-alt"></i>
+                <span>Defect Map</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Intelligence &amp; Management</div>
+            <a href="analytics.html" class="nav-link-rg">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="inspection-history.html" class="nav-link-rg">
+                <i class="bi bi-clock-history"></i>
+                <span>Inspection History</span>
+            </a>
+            <a href="maintenance.html" class="nav-link-rg">
+                <i class="bi bi-wrench-adjustable"></i>
+                <span>Maintenance Operations</span>
+                <span class="badge bg-warning text-dark ms-auto" id="sidebar-maint-count" style="font-size: 0.65rem;">0</span>
+            </a>
+            <a href="reports.html" class="nav-link-rg">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Reports</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Configuration</div>
+            <a href="settings.html" class="nav-link-rg active">
+                <i class="bi bi-gear-fill"></i>
+                <span>Settings</span>
+            </a>
+            <a href="#" class="nav-link-rg text-danger action-logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                    <div class="user-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="text-truncate">
+                        <div class="fw-semibold text-white small text-truncate" id="user-name">Loading...</div>
+                        <span class="role-badge" id="user-role">INSPECTOR</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger btn-sm p-1 px-2 action-logout" title="Sign Out">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="app-main">
+        <header class="dashboard-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="mobile-navbar-btn" id="mobile-sidebar-toggle" aria-label="Toggle Navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div>
+                    <h2 class="topbar-title font-outfit m-0">System Settings &amp; Configuration</h2>
+                    <div class="text-muted small">Configure AI inspection parameters, telemetry preferences, and railway engineering limits.</div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success-subtle text-success border border-success-subtle p-2">
+                    <i class="bi bi-check-circle-fill me-1"></i> System Online
+                </span>
+            </div>
+        </header>
+
+        <div class="dashboard-content container-fluid p-4">
+            <div class="row g-4">
+                <!-- 1. AI Detection Model Parameters -->
+                <div class="col-lg-6">
+                    <div class="panel-card p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h3 class="font-outfit fs-5 text-dark fw-bold m-0">
+                                <i class="bi bi-cpu-fill text-primary me-2"></i> YOLO11 AI Model Parameters
+                            </h3>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-outfit">v3.0 Production</span>
+                        </div>
+                        <p class="text-muted small mb-4">
+                            Configure computer vision inference parameters applied during automated railway defect scans.
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="form-label text-dark small fw-bold">Active Detection Model</label>
+                            <input type="text" class="form-control" value="YOLO11-RailGuard-v3.0 + Hybrid Vision Analyzer" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label text-dark small fw-bold">Confidence Threshold</label>
+                                <span class="text-primary fw-bold font-outfit" id="conf-val">18% (0.18)</span>
+                            </div>
+                            <input type="range" class="form-range" min="10" max="60" value="18" id="conf-slider" oninput="document.getElementById('conf-val').innerText = this.value + '% (0.' + this.value + ')'">
+                            <div class="form-text text-muted small">Calibrated threshold ensuring low false-negatives on hairline defects and joint discontinuities.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-dark small fw-bold mb-2">Supported Defect Classes</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Broken Rail</span>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Fishplate Joint Defects</span>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Track Corrosion</span>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Head Checks (RCF)</span>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Squats (RCF)</span>
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Surface Damage &amp; Flaking</span>
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Fastener Anomalies</span>
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Sleeper Degradation</span>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" id="hybridGrounding" checked>
+                            <label class="form-check-label text-dark small fw-bold" for="hybridGrounding">Enable Hybrid Visual Feature Grounding &amp; Edge Discontinuity Analysis</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Railway Division & Regional Preferences -->
+                <div class="col-lg-6">
+                    <div class="panel-card p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h3 class="font-outfit fs-5 text-dark fw-bold m-0">
+                                <i class="bi bi-geo-alt-fill text-warning me-2"></i> Railway Zone &amp; GIS Defaults
+                            </h3>
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle font-outfit">Regional Division</span>
+                        </div>
+                        <p class="text-muted small mb-4">
+                            Set default zone and operational chainage preferences for quick inspection tagging.
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="form-label text-dark small fw-bold">Primary Railway Zone</label>
+                            <select class="form-select" id="pref-zone">
+                                <option value="SCR - South Central Railway" selected>SCR - South Central Railway</option>
+                                <option value="NR - Northern Railway">NR - Northern Railway</option>
+                                <option value="WR - Western Railway">WR - Western Railway</option>
+                                <option value="CR - Central Railway">CR - Central Railway</option>
+                                <option value="SR - Southern Railway">SR - Southern Railway</option>
+                                <option value="ER - Eastern Railway">ER - Eastern Railway</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-dark small fw-bold">Default Track Section / Division</label>
+                            <input type="text" class="form-control" id="pref-section" value="Secunderabad - Kazipet Main Line (UP)">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-dark small fw-bold">GIS Tile Provider</label>
+                            <input type="text" class="form-control" value="OpenStreetMap Standard Cartography (Direct Leaflet)" readonly>
+                            <div class="form-text text-muted small">No external proprietary API keys required. Compliant with OSM Usage Policy.</div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary w-100 font-outfit py-2 mt-3" onclick="alert('Configuration preferences saved successfully!')">
+                            <i class="bi bi-save me-1"></i> Save System Preferences
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Security, Authentication & Session Info -->
+                <div class="col-12">
+                    <div class="panel-card p-4">
+                        <h3 class="font-outfit fs-5 text-dark fw-bold mb-3">
+                            <i class="bi bi-shield-lock-fill text-success me-2"></i> Authentication &amp; System Health
+                        </h3>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="p-3 rounded bg-light border">
+                                    <div class="text-muted small">Authentication Engine</div>
+                                    <div class="text-dark fw-bold">Spring Security 6 + JWT</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 rounded bg-light border">
+                                    <div class="text-muted small">Google Identity Services</div>
+                                    <div class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Enabled &amp; Ready</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 rounded bg-light border">
+                                    <div class="text-muted small">Visual Anti-Automation</div>
+                                    <div class="text-dark fw-bold">Dynamic PNG CAPTCHA</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 rounded bg-light border">
+                                    <div class="text-muted small">Persistence Database</div>
+                                    <div class="text-dark fw-bold">MySQL 8.0 Engine</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/navigation.js"></script>
+</body>
+</html>
+

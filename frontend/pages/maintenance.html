@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TRACK DAMAGE ANALYZER – Maintenance Work Orders">
+    <title>Maintenance Operations – TRACK DAMAGE ANALYZER</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Base Styles -->
+    <link href="../css/auth.css" rel="stylesheet">
+    <link href="../css/dashboard.css" rel="stylesheet">
+</head>
+
+<body class="dashboard-body">
+
+    <!-- Mobile Sidebar Dark Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- App Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar">
+        <!-- Sidebar Brand -->
+        <div class="sidebar-header">
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-train-front"></i>
+            </div>
+            <div>
+                <h1 class="brand-title">TRACK DAMAGE ANALYZER</h1>
+                <div class="text-muted" style="font-size: 0.68rem; letter-spacing: 0.5px; line-height: 1.2;">AI-Powered Railway Track Defect Detection, Geospatial Inspection, Risk Assessment and Maintenance Management</div>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <div class="sidebar-menu">
+            <div class="sidebar-label">Operations</div>
+            <a href="dashboard.html" class="nav-link-rg">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="inspection.html" class="nav-link-rg">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span>New Inspection</span>
+            </a>
+            <a href="inspection.html#results" class="nav-link-rg">
+                <i class="bi bi-clipboard2-pulse"></i>
+                <span>Inspection Results</span>
+            </a>
+            <a href="map.html" class="nav-link-rg">
+                <i class="bi bi-geo-alt"></i>
+                <span>Defect Map</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Intelligence &amp; Management</div>
+            <a href="analytics.html" class="nav-link-rg">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="inspection-history.html" class="nav-link-rg">
+                <i class="bi bi-clock-history"></i>
+                <span>Inspection History</span>
+            </a>
+            <a href="maintenance.html" class="nav-link-rg active">
+                <i class="bi bi-wrench-adjustable"></i>
+                <span>Maintenance Operations</span>
+            </a>
+            <a href="reports.html" class="nav-link-rg">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Reports</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Configuration</div>
+            <a href="settings.html" class="nav-link-rg">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <!-- Sidebar Footer / User Profile -->
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                    <div class="user-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="text-truncate">
+                        <div class="fw-semibold text-white small text-truncate" id="user-name">Inspector</div>
+                        <span class="role-badge" id="user-role">INSPECTOR</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger btn-sm p-1 px-2 action-logout" title="Sign Out">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+        <!-- Top Bar -->
+        <header class="dashboard-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="mobile-navbar-btn" id="mobile-sidebar-toggle" aria-label="Toggle Navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div>
+                    <h2 class="h4 fw-bold text-dark font-outfit mb-0">Maintenance Operations</h2>
+                    <p class="text-muted small mb-0 d-none d-sm-block">Schedule and track corrective engineering repairs
+                        across defective track segments</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <div class="telemetry-chip d-none d-md-inline-flex" title="Spring Boot Core Status">
+                    <span class="pulse-dot"></span>
+                    <span class="text-secondary small fw-medium">Core :8080</span>
+                </div>
+                <button class="btn btn-rg btn-sm d-inline-flex align-items-center gap-2 px-3 py-2"
+                    id="btn-open-create-modal">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Issue Work Order</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- KPI Metric Cards (Row of 4) -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">Total Work Orders</span>
+                        <div class="metric-icon-box metric-icon-teal"><i class="bi bi-wrench"></i></div>
+                    </div>
+                    <div class="metric-value" id="m-stat-total">0</div>
+                    <div class="metric-footer"><i class="bi bi-database text-primary"></i><span>Saved in MySQL</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">Scheduled</span>
+                        <div class="metric-icon-box metric-icon-amber"><i class="bi bi-calendar-event"></i></div>
+                    </div>
+                    <div class="metric-value text-warning" id="m-stat-scheduled">0</div>
+                    <div class="metric-footer"><i class="bi bi-clock-history text-warning"></i><span>Pending
+                            dispatch</span></div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">In Progress</span>
+                        <div class="metric-icon-box metric-icon-red"><i class="bi bi-gear-wide-connected"></i></div>
+                    </div>
+                    <div class="metric-value text-info" id="m-stat-in-progress">0</div>
+                    <div class="metric-footer"><i class="bi bi-activity text-info"></i><span>Crews on-site</span></div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">Completed Repairs</span>
+                        <div class="metric-icon-box metric-icon-green"><i class="bi bi-check2-circle"></i></div>
+                    </div>
+                    <div class="metric-value text-success" id="m-stat-completed">0</div>
+                    <div class="metric-footer"><i class="bi bi-shield-check text-success"></i><span>Verified track
+                            safety</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="panel-card mb-4 p-3">
+            <div class="row g-2 align-items-center justify-content-between">
+                <div class="col-md-5">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-secondary-subtle text-muted"><i
+                                class="bi bi-search"></i></span>
+                        <input type="text" id="m-search-input" class="form-control"
+                            placeholder="Search work order #, title, unit, or inspection...">
+                    </div>
+                </div>
+                <div class="col-md-7 d-flex align-items-center justify-content-md-end gap-2 flex-wrap">
+                    <div class="d-flex align-items-center gap-1">
+                        <label for="m-filter-priority" class="text-muted small m-0 fw-bold">Priority:</label>
+                        <select id="m-filter-priority" class="form-select form-select-sm" style="width: auto;">
+                            <option value="ALL">All Priorities</option>
+                            <option value="CRITICAL">Critical</option>
+                            <option value="HIGH">High</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="LOW">Low</option>
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-center gap-1">
+                        <label for="m-filter-status" class="text-muted small m-0 fw-bold">Status:</label>
+                        <select id="m-filter-status" class="form-select form-select-sm" style="width: auto;">
+                            <option value="ALL">All Statuses</option>
+                            <option value="SCHEDULED">Scheduled</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+                    <a href="reports.html" class="btn btn-outline-primary btn-sm" title="Export Work Orders">
+                        <i class="bi bi-download me-1"></i> Export
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance Work Orders Table Card -->
+        <div class="panel-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h5 text-dark font-outfit m-0">
+                    <i class="bi bi-card-checklist text-primary me-2"></i> All Maintenance Work Orders
+                </h3>
+                <span class="badge bg-secondary font-outfit" id="m-count-badge">Loading...</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead>
+                        <tr>
+                            <th>Task #</th>
+                            <th>Priority</th>
+                            <th>Work Order Title &amp; Details</th>
+                            <th>Linked Inspection</th>
+                            <th>Assigned Unit</th>
+                            <th>Scheduled Date</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="maintenance-tbody">
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">Loading work orders from MySQL...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Work Order Modal -->
+    <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #ffffff; border: 1px solid var(--rg-border); color: #0f172a;">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title font-outfit fw-bold text-dark" id="createTaskModalLabel">
+                        <i class="bi bi-wrench-adjustable text-warning me-2"></i> Issue Maintenance Work Order
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="create-modal-error"></div>
+                    <div class="alert alert-success d-none" id="create-modal-success"></div>
+
+                    <form id="create-task-form">
+                        <div class="mb-3">
+                            <label for="task-inspection-id" class="form-label small text-dark fw-bold">Linked Inspection
+                                *</label>
+                            <select class="form-select" id="task-inspection-id" required>
+                                <option value="">Select inspection record...</option>
+                            </select>
+                            <div class="text-muted" style="font-size: 0.75rem;">Associates this work order with an
+                                authentic track inspection.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="task-title" class="form-label small text-dark fw-bold">Work Order Title
+                                *</label>
+                            <input type="text" class="form-control" id="task-title" required
+                                placeholder="e.g. Ultrasonic Rail Flaw Rectification">
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label for="task-priority" class="form-label small text-dark fw-bold">Priority *</label>
+                                <select class="form-select" id="task-priority" required>
+                                    <option value="CRITICAL">CRITICAL</option>
+                                    <option value="HIGH">HIGH</option>
+                                    <option value="MEDIUM" selected>MEDIUM</option>
+                                    <option value="LOW">LOW</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="task-assigned" class="form-label small text-dark fw-bold">Assigned Personnel
+                                    / Unit *</label>
+                                <input type="text" class="form-control" id="task-assigned" required
+                                    placeholder="e.g. Permanent Way Gang 04">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="task-scheduled" class="form-label small text-dark fw-bold">Scheduled Maintenance
+                                Date</label>
+                            <input type="datetime-local" class="form-control" id="task-scheduled">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="task-desc" class="form-label small text-dark fw-bold">Engineering Description
+                                &amp; Instructions</label>
+                            <textarea class="form-control" id="task-desc" rows="3"
+                                placeholder="Provide details on defect repairs, track speed restrictions, or required replacement components..."></textarea>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="button" class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning" id="btn-submit-task">
+                                <i class="bi bi-check2-circle me-1"></i> Issue Work Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content" style="background: #ffffff; border: 1px solid var(--rg-border); color: #0f172a;">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title font-outfit fw-bold text-dark" id="updateStatusModalLabel">
+                        <i class="bi bi-arrow-repeat text-primary me-2"></i> Update Status
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="update-status-form">
+                        <input type="hidden" id="edit-task-id">
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Work Order</label>
+                            <div class="fw-bold text-dark font-outfit" id="edit-task-number">-</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="edit-task-status" class="form-label small text-dark fw-bold">Status *</label>
+                            <select class="form-select" id="edit-task-status" required>
+                                <option value="PENDING">PENDING</option>
+                                <option value="SCHEDULED">SCHEDULED</option>
+                                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                                <option value="VERIFIED">VERIFIED</option>
+                                <option value="CANCELLED">CANCELLED</option>
+                            </select>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-sm" id="btn-save-task-status">
+                                Save Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Navigation JS -->
+    <script src="../js/navigation.js"></script>
+    <!-- Maintenance Controller JS -->
+    <script src="../js/maintenance.js"></script>
+</body>
+
+</html>

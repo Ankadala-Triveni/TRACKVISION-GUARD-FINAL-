@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TRACK DAMAGE ANALYZER – Engineering & Compliance Reports">
+    <title>Reports – TRACK DAMAGE ANALYZER</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Base Styles -->
+    <link href="../css/auth.css" rel="stylesheet">
+    <link href="../css/dashboard.css" rel="stylesheet">
+    <style>
+        .report-card {
+            background: #ffffff;
+            border: 1px solid #cbdde9;
+            box-shadow: 0 4px 18px rgba(44, 79, 124, 0.08);
+            border-radius: 16px;
+            padding: 1.75rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 26px rgba(44, 79, 124, 0.14);
+            border-color: #2c4f7c;
+        }
+        .report-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        @media print {
+            .app-sidebar, .dashboard-topbar, .report-actions, .nav-tabs, #mobile-sidebar-toggle {
+                display: none !important;
+            }
+            .app-main {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .panel-card {
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                background: #fff !important;
+                color: #000 !important;
+            }
+            .table-dark {
+                background: #fff !important;
+                color: #000 !important;
+            }
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <!-- Mobile Sidebar Dark Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- App Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar">
+        <!-- Sidebar Brand -->
+        <div class="sidebar-header">
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-train-front"></i>
+            </div>
+            <div>
+                <h1 class="brand-title">TRACK DAMAGE ANALYZER</h1>
+                <div class="text-muted" style="font-size: 0.68rem; letter-spacing: 0.5px; line-height: 1.2;">AI-Powered Railway Track Defect Detection, Geospatial Inspection, Risk Assessment and Maintenance Management</div>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <div class="sidebar-menu">
+            <div class="sidebar-label">Operations</div>
+            <a href="dashboard.html" class="nav-link-rg">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="inspection.html" class="nav-link-rg">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span>New Inspection</span>
+            </a>
+            <a href="inspection.html#results" class="nav-link-rg">
+                <i class="bi bi-clipboard2-pulse"></i>
+                <span>Inspection Results</span>
+            </a>
+            <a href="map.html" class="nav-link-rg">
+                <i class="bi bi-geo-alt"></i>
+                <span>Defect Map</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Intelligence &amp; Management</div>
+            <a href="analytics.html" class="nav-link-rg">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="inspection-history.html" class="nav-link-rg">
+                <i class="bi bi-clock-history"></i>
+                <span>Inspection History</span>
+            </a>
+            <a href="maintenance.html" class="nav-link-rg">
+                <i class="bi bi-wrench-adjustable"></i>
+                <span>Maintenance Operations</span>
+            </a>
+            <a href="reports.html" class="nav-link-rg active">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Reports</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Configuration</div>
+            <a href="settings.html" class="nav-link-rg">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <!-- Sidebar Footer / User Profile -->
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                    <div class="user-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="text-truncate">
+                        <div class="fw-semibold text-white small text-truncate" id="user-name">Inspector</div>
+                        <span class="role-badge" id="user-role">INSPECTOR</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger btn-sm p-1 px-2 action-logout" title="Sign Out">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+        <!-- Top Bar -->
+        <header class="dashboard-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="mobile-navbar-btn" id="mobile-sidebar-toggle" aria-label="Toggle Navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div>
+                    <h2 class="h4 fw-bold text-dark font-outfit mb-0">Engineering Reports &amp; Data Export</h2>
+                    <p class="text-muted small mb-0 d-none d-sm-block">Generate downloadable audit spreadsheets &amp; printable PDF logs from MySQL records</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <div class="telemetry-chip d-none d-md-inline-flex" title="Spring Boot Core Status">
+                    <span class="pulse-dot"></span>
+                    <span class="text-secondary small fw-medium">Core :8080</span>
+                </div>
+                <button class="btn btn-outline-primary btn-sm px-3 py-2" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Print / Save PDF
+                </button>
+            </div>
+        </header>
+
+        <!-- 3 Report Cards Grid -->
+        <div class="row g-4 mb-4">
+            <!-- Report 1: Inspection Audit Report -->
+            <div class="col-md-4">
+                <div class="report-card">
+                    <div>
+                        <div class="report-icon-box bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                            <i class="bi bi-clipboard2-data"></i>
+                        </div>
+                        <h4 class="h5 text-dark font-outfit mb-2">Track Inspections Audit</h4>
+                        <p class="text-muted small mb-3">
+                            Comprehensive export of all track scans, localized defect counts, severity metrics, GPS coordinates, and AI risk scores.
+                        </p>
+                        <div class="text-muted small mb-3">
+                            <i class="bi bi-check2 text-success me-1"></i> Includes GPS latitude &amp; longitude<br>
+                            <i class="bi bi-check2 text-success me-1"></i> YOLO11 V3 risk classification
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn btn-rg btn-sm w-100" id="btn-export-inspections-csv">
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report 2: Maintenance Work Orders Report -->
+            <div class="col-md-4">
+                <div class="report-card">
+                    <div>
+                        <div class="report-icon-box bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">
+                            <i class="bi bi-wrench-adjustable"></i>
+                        </div>
+                        <h4 class="h5 text-dark font-outfit mb-2">Maintenance Work Orders</h4>
+                        <p class="text-muted small mb-3">
+                            Complete log of corrective action orders, assigned engineering crews, repair descriptions, and current resolution status.
+                        </p>
+                        <div class="text-muted small mb-3">
+                            <i class="bi bi-check2 text-success me-1"></i> Task priority and assignment logs<br>
+                            <i class="bi bi-check2 text-success me-1"></i> Linked inspection cross-reference
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn btn-warning btn-sm w-100 text-dark fw-semibold" id="btn-export-maintenance-csv">
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report 3: High-Risk Critical Anomaly Summary -->
+            <div class="col-md-4">
+                <div class="report-card">
+                    <div>
+                        <div class="report-icon-box bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
+                            <i class="bi bi-shield-fill-exclamation"></i>
+                        </div>
+                        <h4 class="h5 text-dark font-outfit mb-2">High-Risk Safety Summary</h4>
+                        <p class="text-muted small mb-3">
+                            Targeted safety briefing isolating all track sections evaluated as <strong>CRITICAL</strong> or <strong>HIGH</strong> risk for urgent maintenance.
+                        </p>
+                        <div class="text-muted small mb-3">
+                            <i class="bi bi-check2 text-success me-1"></i> Filtered priority anomalies<br>
+                            <i class="bi bi-check2 text-success me-1"></i> Immediate rectification list
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn btn-danger btn-sm w-50 font-outfit fw-bold" id="btn-export-highrisk-pdf">
+                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm w-50 font-outfit" id="btn-export-highrisk-csv">
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i> CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Data Preview Section -->
+        <div class="panel-card mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                <ul class="nav nav-pills" id="reportTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active btn-sm" id="tab-inspections" data-bs-toggle="pill" data-bs-target="#pane-inspections" type="button" role="tab">
+                            <i class="bi bi-clipboard2-check me-1"></i> Inspections Preview (<span id="prev-insp-count">0</span>)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link btn-sm" id="tab-maintenance" data-bs-toggle="pill" data-bs-target="#pane-maintenance" type="button" role="tab">
+                            <i class="bi bi-wrench me-1"></i> Maintenance Preview (<span id="prev-maint-count">0</span>)
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="text-muted small">
+                    <i class="bi bi-database-check text-primary me-1"></i> Sourced directly from MySQL
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="reportTabsContent">
+                <!-- Pane 1: Inspections Preview -->
+                <div class="tab-pane fade show active" id="pane-inspections" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle small mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Inspection #</th>
+                                    <th>Date</th>
+                                    <th>Zone &amp; Section</th>
+                                    <th>Location Description</th>
+                                    <th>GPS (Lat, Lng)</th>
+                                    <th>Defects</th>
+                                    <th>Risk Score</th>
+                                    <th>Risk Level</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Report</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preview-inspections-tbody">
+                                <tr><td colspan="10" class="text-center text-muted py-4">Loading inspection data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pane 2: Maintenance Preview -->
+                <div class="tab-pane fade" id="pane-maintenance" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle small mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Task #</th>
+                                    <th>Priority</th>
+                                    <th>Title</th>
+                                    <th>Linked Inspection</th>
+                                    <th>Assigned Unit</th>
+                                    <th>Scheduled Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preview-maintenance-tbody">
+                                <tr><td colspan="7" class="text-center text-muted py-4">Loading maintenance data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Navigation JS -->
+    <script src="../js/navigation.js"></script>
+    <!-- Reports Controller JS -->
+    <script src="../js/reports.js"></script>
+</body>
+</html>
+

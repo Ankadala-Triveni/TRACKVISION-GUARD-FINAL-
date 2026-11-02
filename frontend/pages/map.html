@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TRACK DAMAGE ANALYZER – Defect Location GIS Map">
+    <title>Defect Map – TRACK DAMAGE ANALYZER</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Leaflet CSS for GIS Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    
+    <!-- Base Styles -->
+    <link href="../css/auth.css" rel="stylesheet">
+    <link href="../css/dashboard.css" rel="stylesheet">
+    <style>
+        #gis-map {
+            width: 100%;
+            height: 640px;
+            border-radius: 16px;
+            border: 1px solid var(--rg-border);
+            z-index: 1;
+            background: #e5e7eb;
+        }
+        .map-legend {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            font-size: 0.85rem;
+            color: #1e293b;
+        }
+        .legend-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .leaflet-popup-content-wrapper {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18) !important;
+        }
+        .leaflet-popup-tip {
+            background: #ffffff !important;
+        }
+        .chart-box {
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <!-- Mobile Sidebar Dark Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- App Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar">
+        <!-- Sidebar Brand -->
+        <div class="sidebar-header">
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-train-front"></i>
+            </div>
+            <div>
+                <h1 class="brand-title">TRACK DAMAGE ANALYZER</h1>
+                <div class="text-muted" style="font-size: 0.68rem; letter-spacing: 0.5px; line-height: 1.2;">AI-Powered Railway Track Defect Detection, Geospatial Inspection, Risk Assessment and Maintenance Management</div>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <div class="sidebar-menu">
+            <div class="sidebar-label">Operations</div>
+            <a href="dashboard.html" class="nav-link-rg">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="inspection.html" class="nav-link-rg">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span>New Inspection</span>
+            </a>
+            <a href="inspection.html#results" class="nav-link-rg">
+                <i class="bi bi-clipboard2-pulse"></i>
+                <span>Inspection Results</span>
+            </a>
+            <a href="map.html" class="nav-link-rg active">
+                <i class="bi bi-geo-alt"></i>
+                <span>Defect Map</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Intelligence &amp; Management</div>
+            <a href="analytics.html" class="nav-link-rg">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="inspection-history.html" class="nav-link-rg">
+                <i class="bi bi-clock-history"></i>
+                <span>Inspection History</span>
+            </a>
+            <a href="maintenance.html" class="nav-link-rg">
+                <i class="bi bi-wrench-adjustable"></i>
+                <span>Maintenance Operations</span>
+            </a>
+            <a href="reports.html" class="nav-link-rg">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Reports</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Configuration</div>
+            <a href="settings.html" class="nav-link-rg">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <!-- Sidebar Footer / User Profile -->
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                    <div class="user-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="text-truncate">
+                        <div class="fw-semibold text-white small text-truncate" id="user-name">Inspector</div>
+                        <span class="role-badge" id="user-role">INSPECTOR</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger btn-sm p-1 px-2 action-logout" title="Sign Out">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+        <!-- Top Bar -->
+        <header class="dashboard-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="mobile-navbar-btn" id="mobile-sidebar-toggle" aria-label="Toggle Navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div>
+                    <h2 class="h4 fw-bold text-dark font-outfit mb-0">Defect Location GIS Map</h2>
+                    <p class="text-muted small mb-0 d-none d-sm-block">Real-time geospatial tracking of localized railway defects &amp; high-risk track sections</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <div class="telemetry-chip d-none d-md-inline-flex" title="Spring Boot Core Status">
+                    <span class="pulse-dot"></span>
+                    <span class="text-secondary small fw-medium">Core :8080</span>
+                </div>
+                <div class="telemetry-chip d-none d-md-inline-flex" title="FastAPI AI Engine Status">
+                    <i class="bi bi-cpu text-info"></i>
+                    <span class="text-secondary small fw-medium">YOLO11 V3</span>
+                </div>
+                <a href="inspection.html" class="btn btn-rg btn-sm d-inline-flex align-items-center gap-2 px-3 py-2">
+                    <i class="bi bi-plus-circle"></i>
+                    <span class="d-none d-sm-inline">New Inspection</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Metrics Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="metric-card p-3">
+                    <div class="text-muted small mb-1">Mapped GPS Points</div>
+                    <div class="h3 fw-bold text-dark font-outfit m-0" id="map-stat-total">0</div>
+                    <div class="small text-muted mt-1"><i class="bi bi-pin-map text-primary me-1"></i>Verified Coordinates</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="metric-card p-3">
+                    <div class="text-muted small mb-1">Critical Risk Sites</div>
+                    <div class="h3 fw-bold text-danger font-outfit m-0" id="map-stat-critical">0</div>
+                    <div class="small text-danger mt-1"><i class="bi bi-exclamation-octagon-fill me-1"></i>Immediate Rectification</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="metric-card p-3">
+                    <div class="text-muted small mb-1">High Risk Sites</div>
+                    <div class="h3 fw-bold text-warning font-outfit m-0" id="map-stat-high">0</div>
+                    <div class="small text-warning mt-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Priority Inspection</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="metric-card p-3">
+                    <div class="text-muted small mb-1">Healthy / Low Risk</div>
+                    <div class="h3 fw-bold text-success font-outfit m-0" id="map-stat-safe">0</div>
+                    <div class="small text-success mt-1"><i class="bi bi-shield-check me-1"></i>Clear Track Segments</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Control Bar -->
+        <div class="panel-card mb-4 p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap flex-grow-1">
+                <!-- Search input -->
+                <div class="input-group input-group-sm" style="max-width: 240px;">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="filter-search" class="form-control form-control-sm border-start-0" placeholder="Search ID or Section...">
+                </div>
+
+                <!-- State filter -->
+                <select id="filter-state" class="form-select form-select-sm" style="width: auto;">
+                    <option value="ALL">All States</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="West Bengal">West Bengal</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Odisha">Odisha</option>
+                    <option value="Assam">Assam</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Punjab">Punjab</option>
+                </select>
+
+                <!-- Zone filter -->
+                <select id="filter-zone" class="form-select form-select-sm" style="width: auto;">
+                    <option value="ALL">All Zones (16 Zones)</option>
+                    <option value="Northern Railway">Northern Railway</option>
+                    <option value="Western Railway">Western Railway</option>
+                    <option value="Central Railway">Central Railway</option>
+                    <option value="Eastern Railway">Eastern Railway</option>
+                    <option value="Southern Railway">Southern Railway</option>
+                    <option value="South Central Railway">South Central Railway</option>
+                    <option value="South Eastern Railway">South Eastern Railway</option>
+                    <option value="South Western Railway">South Western Railway</option>
+                    <option value="East Coast Railway">East Coast Railway</option>
+                    <option value="North Central Railway">North Central Railway</option>
+                    <option value="North Western Railway">North Western Railway</option>
+                    <option value="West Central Railway">West Central Railway</option>
+                    <option value="East Central Railway">East Central Railway</option>
+                    <option value="Northeast Frontier Railway">Northeast Frontier Railway</option>
+                    <option value="Southeast Central Railway">Southeast Central Railway</option>
+                    <option value="Konkan Railway">Konkan Railway</option>
+                </select>
+
+                <!-- Defect Category filter -->
+                <select id="filter-category" class="form-select form-select-sm" style="width: auto;">
+                    <option value="ALL">All Defect Types</option>
+                    <option value="Broken Rail">Broken Rail</option>
+                    <option value="Crack">Crack / Fissure</option>
+                    <option value="Head Checks">Head Checks</option>
+                    <option value="Join Bar">Fishplate / Joint Bar</option>
+                    <option value="Squats">Squats</option>
+                    <option value="Corrosion">Corrosion / Rust</option>
+                </select>
+
+                <!-- Risk filter -->
+                <select id="filter-risk" class="form-select form-select-sm" style="width: auto;">
+                    <option value="ALL">All Risk Levels</option>
+                    <option value="CRITICAL">Critical Risk</option>
+                    <option value="HIGH">High Risk</option>
+                    <option value="MEDIUM">Medium Risk</option>
+                    <option value="LOW">Low Risk</option>
+                </select>
+
+                <button class="btn btn-outline-primary btn-sm" id="btn-recenter-map">
+                    <i class="bi bi-arrows-fullscreen me-1"></i> India View
+                </button>
+            </div>
+            
+            <!-- Map Legend -->
+            <div class="map-legend d-flex align-items-center gap-3 flex-wrap m-0">
+                <span><span class="legend-indicator" style="background: #ef4444;"></span>Critical</span>
+                <span><span class="legend-indicator" style="background: #f97316;"></span>High</span>
+                <span><span class="legend-indicator" style="background: #eab308;"></span>Medium</span>
+                <span><span class="legend-indicator" style="background: #10b981;"></span>Low</span>
+            </div>
+        </div>
+
+        <!-- Map Container Card (Always Visible) -->
+        <div class="panel-card p-2 mb-4">
+            <div id="gis-map"></div>
+        </div>
+
+        <!-- Info / Empty State Alert (Displayed below working map when no GPS coordinates exist) -->
+        <div class="alert alert-info d-none mb-4" id="map-empty-alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <span id="map-empty-text">No inspections currently have valid GPS coordinates recorded.</span>
+        </div>
+
+        <!-- Selected Location Details Panel -->
+        <div class="panel-card d-none mb-4" id="location-detail-panel">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h4 class="h5 text-dark font-outfit m-0">
+                    <i class="bi bi-geo-alt-fill text-primary me-2"></i> Selected Track Location: <span id="sel-insp-number">-</span>
+                </h4>
+                <button type="button" class="btn-close" id="btn-close-detail" aria-label="Close"></button>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="text-muted small">Zone &amp; Section</div>
+                    <div class="text-dark fw-bold small" id="sel-zone-sec">-</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Location Description</div>
+                    <div class="text-secondary small text-truncate" id="sel-loc-desc">-</div>
+                </div>
+                <div class="col-md-2">
+                    <div class="text-muted small">GPS Coordinates</div>
+                    <div class="text-info small font-monospace" id="sel-gps-coords">-</div>
+                </div>
+                <div class="col-md-2">
+                    <div class="text-muted small">Risk Assessment</div>
+                    <div>
+                        <span class="risk-badge" id="sel-risk-badge">-</span>
+                        <span class="text-dark small fw-bold font-outfit ms-1" id="sel-risk-score">0.0</span>
+                    </div>
+                </div>
+                <div class="col-md-2 text-md-end">
+                    <a href="inspection-history.html" class="btn btn-rg btn-sm" id="sel-view-report-btn">
+                        <i class="bi bi-eye me-1"></i> Full Report
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- State-Wise Track Situation Analytics Grid (Photo 1 Reference) -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="panel-card h-100 p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h4 class="h6 fw-bold text-dark font-outfit m-0">
+                                <i class="bi bi-bar-chart-line-fill text-primary me-2"></i> All-India State-Wise Track Defect Distribution
+                            </h4>
+                            <span class="text-muted small">Comparison of Critical (Immediate Rectification) and High/Medium Risks across Indian States</span>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-outfit">Indian Railways Network</span>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="chart-state-defects"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="panel-card h-100 p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h4 class="h6 fw-bold text-dark font-outfit m-0">
+                                <i class="bi bi-pie-chart-fill text-primary me-2"></i> Defect Class Shares
+                            </h4>
+                            <span class="text-muted small">Category proportions across India</span>
+                        </div>
+                        <span class="badge bg-secondary font-outfit" id="chart-total-defects-badge">Total</span>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="chart-defect-shares"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Chart.js for State-Wise Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- All-India Dataset -->
+    <script src="../js/all-india-data.js"></script>
+    <!-- Navigation JS -->
+    <script src="../js/navigation.js"></script>
+    <!-- Map Controller JS -->
+    <script src="../js/map.js"></script>
+</body>
+</html>
+

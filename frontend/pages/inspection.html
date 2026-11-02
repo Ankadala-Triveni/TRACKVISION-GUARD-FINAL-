@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Inspection – TRACK DAMAGE ANALYZER</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="../css/auth.css" rel="stylesheet">
+    <link href="../css/dashboard.css" rel="stylesheet">
+    <style>
+        .inspection-container { max-width: 1140px; margin: 0 auto; width: 100%; }
+        .upload-dropzone {
+            border: 2px dashed #93c5fd;
+            border-radius: 14px;
+            padding: 2.5rem;
+            text-align: center;
+            background: #f8fafc;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .upload-dropzone:hover {
+            border-color: var(--rg-primary);
+            background: #eff6ff;
+        }
+        .upload-dropzone.drag-active {
+            border-color: var(--rg-primary) !important;
+            background: #dbeafe !important;
+            box-shadow: 0 0 20px rgba(29, 78, 216, 0.15);
+        }
+        .preview-img {
+            width: 130px;
+            height: 95px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--rg-border);
+        }
+        .detection-row {
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .detection-row:hover, .detection-row.active {
+            background: rgba(29, 78, 216, 0.08) !important;
+        }
+        .sample-thumbnail-card {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .sample-thumbnail-card:hover {
+            border-color: var(--rg-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.2);
+        }
+        .sample-thumb-img {
+            width: 100%;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+        .sample-thumb-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <!-- Mobile Sidebar Dark Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- App Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar">
+        <!-- Sidebar Brand -->
+        <div class="sidebar-header">
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-train-front"></i>
+            </div>
+            <div>
+                <h1 class="brand-title">TRACK DAMAGE ANALYZER</h1>
+                <div class="text-muted" style="font-size: 0.68rem; letter-spacing: 0.5px; line-height: 1.2;">AI-Powered Railway Track Defect Detection, Geospatial Inspection, Risk Assessment and Maintenance Management</div>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <div class="sidebar-menu">
+            <div class="sidebar-label">Operations</div>
+            <a href="dashboard.html" class="nav-link-rg">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="inspection.html" class="nav-link-rg active">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span>New Inspection</span>
+            </a>
+            <a href="inspection.html#results" class="nav-link-rg" id="nav-results-link">
+                <i class="bi bi-clipboard2-pulse"></i>
+                <span>Inspection Results</span>
+            </a>
+            <a href="map.html" class="nav-link-rg">
+                <i class="bi bi-geo-alt"></i>
+                <span>Defect Map</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Intelligence &amp; Management</div>
+            <a href="analytics.html" class="nav-link-rg">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="inspection-history.html" class="nav-link-rg">
+                <i class="bi bi-clock-history"></i>
+                <span>Inspection History</span>
+            </a>
+            <a href="maintenance.html" class="nav-link-rg">
+                <i class="bi bi-wrench-adjustable"></i>
+                <span>Maintenance Operations</span>
+                <span class="badge bg-warning text-dark ms-auto" id="sidebar-maint-count" style="font-size: 0.65rem;">0</span>
+            </a>
+            <a href="reports.html" class="nav-link-rg">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Reports</span>
+            </a>
+
+            <div class="sidebar-label mt-3">Configuration</div>
+            <a href="settings.html" class="nav-link-rg">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+            <a href="#" class="nav-link-rg text-danger action-logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+        <!-- Sidebar Train Branding Footer (Picture 3 Reference) -->
+        <div class="sidebar-journey-badge">
+            <div class="mb-1"><i class="bi bi-train-front text-info fs-4"></i></div>
+            <div class="journey-text-main font-outfit">Safer Tracks...</div>
+            <div class="journey-text-sub">A Safer Journey...</div>
+        </div>
+
+        <!-- Sidebar Footer / User Profile -->
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                    <div class="user-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="text-truncate">
+                        <div class="fw-semibold text-white small text-truncate" id="user-name">Inspector</div>
+                        <span class="role-badge" id="user-role">INSPECTOR</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger btn-sm p-1 px-2 action-logout" title="Sign Out">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+        <!-- Top Bar -->
+        <header class="dashboard-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="mobile-navbar-btn" id="mobile-sidebar-toggle" aria-label="Toggle Navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div>
+                    <h2 class="h4 fw-bold text-dark font-outfit mb-0">Upload &amp; Analyze Railway Track</h2>
+                    <p class="text-secondary small mb-0 d-none d-sm-block fw-medium">Deep learning visual localization and safety scoring via YOLO11 RailGuard V3</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <div class="telemetry-chip d-none d-md-inline-flex" title="Spring Boot Core Status">
+                    <span class="pulse-dot"></span>
+                    <span class="text-dark small fw-bold">Core :8080</span>
+                </div>
+                <div class="telemetry-chip d-none d-md-inline-flex" title="FastAPI AI Engine Status">
+                    <i class="bi bi-cpu text-primary"></i>
+                    <span class="text-dark small fw-bold">YOLO11 V3</span>
+                </div>
+                <a href="inspection-history.html" class="btn btn-outline-primary btn-sm px-3 py-2">
+                    <i class="bi bi-clock-history me-1"></i> View History
+                </a>
+            </div>
+        </header>
+
+        <div class="inspection-container w-100" style="max-width: 1040px; margin: 0 auto;">
+
+        <div class="alert alert-danger d-none" id="alert-error"></div>
+        <div class="alert alert-success d-none" id="alert-success"></div>
+
+        <!-- Inspection Form Container: Image Upload is Primary (Section 1), Location Details Optional (Section 2) -->
+        <div id="inspection-form-container">
+            <!-- Section 1: Upload Railway Track Image & AI Analysis (PRIMARY ACTION) -->
+            <div class="panel-card" id="upload-analysis-card">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h3 class="h5 text-dark fw-bold m-0 font-outfit">
+                        <i class="bi bi-cloud-arrow-up-fill me-2 text-primary"></i> Upload Railway Track Image &amp; Run AI Analysis
+                    </h3>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle small px-2 py-1">Primary Action</span>
+                </div>
+                <p class="text-secondary small mb-3 fw-medium">
+                    Select or drag-and-drop a railway track photo. The YOLO11 V3 model will inspect the image for surface defects, fractures, joint wear, and corrosion.
+                </p>
+
+                <!-- Drag-and-Drop Dropzone -->
+                <div class="upload-dropzone mb-3" id="dropzone">
+                    <i class="bi bi-cloud-arrow-up display-4 text-primary mb-2"></i>
+                    <h5 class="text-dark fw-bold mb-2">Drag and drop railway track image here</h5>
+                    <p class="text-muted small mb-3">Supported formats: JPG, JPEG, PNG (Strict Magic-Byte Validated &middot; Max 10MB)</p>
+                    <button type="button" class="btn btn-outline-primary px-3 py-2" id="btn-choose-file">
+                        <i class="bi bi-folder2-open me-2"></i>Choose Railway Track Image
+                    </button>
+                    <input type="file" id="fileInput" class="d-none" accept=".jpg,.jpeg,.png">
+                </div>
+
+                <!-- Or Use Sample Images (Reference Image 1 Requirement) -->
+                <div class="mt-3 mb-3 p-3 rounded-3" style="background: #f8fafc; border: 1px solid var(--rg-border);" id="sample-images-section">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <label class="form-label text-dark small fw-bold m-0">
+                            <i class="bi bi-images text-primary me-1"></i> Or use sample images
+                        </label>
+                        <span class="text-muted small" style="font-size: 0.72rem;">1-Click Instant Test</span>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6 col-md-3">
+                            <div class="sample-thumbnail-card" onclick="loadSampleImage('sample_joint_defect.jpg', 'Fishplate Joint Defect')">
+                                <img src="../samples/sample_joint_defect.jpg" alt="Joint Defect" class="sample-thumb-img">
+                                <div class="sample-thumb-label text-truncate">Joint Bar Defect</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="sample-thumbnail-card" onclick="loadSampleImage('sample_broken_rail.jpg', 'Broken Rail / Crack')">
+                                <img src="../samples/sample_broken_rail.jpg" alt="Broken Rail" class="sample-thumb-img">
+                                <div class="sample-thumb-label text-truncate">Broken Rail</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="sample-thumbnail-card" onclick="loadSampleImage('sample_corrosion.jpg', 'Track Corrosion')">
+                                <img src="../samples/sample_corrosion.jpg" alt="Corrosion" class="sample-thumb-img">
+                                <div class="sample-thumb-label text-truncate">Track Corrosion</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="sample-thumbnail-card" onclick="loadSampleImage('sample_clean.jpg', 'Clean Operational Track')">
+                                <img src="../samples/sample_clean.jpg" alt="Clean Track" class="sample-thumb-img">
+                                <div class="sample-thumb-label text-truncate">Clean Track</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Selection Preview Area -->
+                <div id="file-preview-card" class="d-none mb-3 p-3 rounded-3" style="background: #f8fafc; border: 1px solid var(--rg-border);">
+                    <div class="row align-items-center g-3">
+                        <div class="col-auto">
+                            <img id="selected-image-preview" src="" alt="Track Preview" class="preview-img">
+                        </div>
+                        <div class="col">
+                            <div class="text-dark fw-bold small text-truncate" id="file-info-name">track.jpg</div>
+                            <div class="text-muted small" id="file-info-size">0 KB</div>
+                            <div class="d-flex flex-wrap align-items-center gap-2 mt-1">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle small"><i class="bi bi-check-circle-fill me-1"></i> Ready for YOLO11 V3</span>
+                                <span class="badge bg-secondary-subtle text-info border border-info-subtle small" id="gps-status-badge"><i class="bi bi-geo-alt me-1"></i> <span id="gps-status-text">Checking EXIF GPS...</span></span>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-change-image">
+                                <i class="bi bi-arrow-repeat me-1"></i> Change Image
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="btn-remove-image">
+                                <i class="bi bi-trash me-1"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prominent Execute YOLO11 V3 Inspection Button -->
+                <div class="mt-4">
+                    <button type="button" class="btn btn-primary btn-lg w-100 py-3 font-outfit fw-bold" id="btn-execute-inspection">
+                        <span class="spinner-border spinner-border-sm d-none me-2" id="execute-spinner"></span>
+                        <i class="bi bi-cpu-fill me-2" id="execute-icon"></i>
+                        <span id="execute-btn-text">Execute YOLO11 V3 Inspection</span>
+                    </button>
+                    <div id="execution-progress-container" class="text-center text-muted small mt-2 d-none">
+                        <span class="spinner-grow spinner-grow-sm text-primary me-2" role="status"></span>
+                        <span id="execution-progress-text" class="fw-semibold text-primary">Initializing inspection...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Card Styled to Match Picture 3 Reference -->
+        <div class="analysis-result-panel d-none mb-4" id="results-card">
+            <!-- Card Header Ribbon -->
+            <div class="analysis-header-bar d-flex align-items-center justify-content-between p-3 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="analysis-header-icon-box">
+                        <i class="bi bi-image"></i>
+                    </div>
+                    <div>
+                        <h3 class="analysis-header-title m-0">Analysis Result</h3>
+                        <span class="text-muted small">Inspection #<strong class="text-primary" id="res-inspection-num">-</strong></span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="status-online-pill"><span class="pulse-green-dot"></span> Online</span>
+                    <button class="btn btn-outline-warning btn-sm font-outfit fw-bold d-none" id="btn-open-maintenance" title="Schedule Work Order">
+                        <i class="bi bi-tools me-1"></i> Schedule Maintenance
+                    </button>
+                    <!-- Hidden elements needed for script backward-compatibility -->
+                    <span class="d-none" id="res-status">-</span>
+                    <span class="d-none" id="res-risk-level">-</span>
+                    <span class="d-none" id="res-risk-score">0.0</span>
+                    <span class="d-none" id="res-model-ver">-</span>
+                    <span class="d-none" id="defect-count-badge">0</span>
+                </div>
+            </div>
+
+            <!-- Analysis Failure Error Banner -->
+            <div class="alert alert-danger d-none mx-3 my-2" id="res-error-box"></div>
+
+            <!-- Top Grid Row: Canvas (Left) | Specs & Cause (Middle) | Detected Region Crop (Right) -->
+            <div class="row g-3 p-3 pt-0 mb-2">
+                <!-- Left: Full Track Photo Canvas -->
+                <div class="col-lg-5 col-md-12">
+                    <div class="card-track-viewport h-100 p-2">
+                        <!-- Visual AI Mode Selector Switcher -->
+                        <div class="btn-group btn-group-sm mb-2 w-100" role="group" id="visual-mode-selector">
+                            <button type="button" class="btn btn-outline-primary active" id="mode-btn-boxes" onclick="switchVisualMode('boxes')"><i class="bi bi-bounding-box me-1"></i> Detections (Boxes)</button>
+                            <button type="button" class="btn btn-outline-primary" id="mode-btn-segmentation" onclick="switchVisualMode('segmentation')"><i class="bi bi-pentagon me-1"></i> Segmentation (Mask)</button>
+                            <button type="button" class="btn btn-outline-primary" id="mode-btn-heatmap" onclick="switchVisualMode('heatmap')"><i class="bi bi-fire me-1"></i> Heatmap</button>
+                            <button type="button" class="btn btn-outline-primary" id="mode-btn-original" onclick="switchVisualMode('original')"><i class="bi bi-image me-1"></i> Original Track</button>
+                        </div>
+
+                        <!-- Defect Summary & Category Breakdown -->
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2" id="defect-summary-badges">
+                            <span class="badge bg-light text-dark border px-2 py-1 font-outfit" id="total-defects-pill"><i class="bi bi-layers-fill me-1 text-primary"></i> Total Defects: <strong id="total-defects-count">0</strong></span>
+                            <div id="category-pills-list" class="d-inline-flex flex-wrap gap-1"></div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between px-2 py-1 mb-2">
+                            <span class="small fw-bold text-dark"><i class="bi bi-bounding-box text-primary me-1"></i> Visual AI Defect Overlay</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="form-check form-switch m-0 small">
+                                    <input class="form-check-input" type="checkbox" id="toggle-boxes" checked>
+                                    <label class="form-check-label small text-muted" for="toggle-boxes">Boxes</label>
+                                </div>
+                                <div class="form-check form-switch m-0 small">
+                                    <input class="form-check-input" type="checkbox" id="toggle-labels" checked>
+                                    <label class="form-check-label small text-muted" for="toggle-labels">Labels</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="canvas-viewport-wrapper">
+                            <div id="canvas-loading" class="text-center py-5">
+                                <div class="spinner-border text-primary mb-2" role="status"></div>
+                                <div class="small fw-semibold text-muted">Rendering track image and detections...</div>
+                            </div>
+                            <canvas id="defect-canvas" class="d-none w-100 rounded-2"></canvas>
+                        </div>
+
+                        <!-- Heatmap Disclaimer -->
+                        <div id="heatmap-disclaimer" class="alert alert-warning small py-1 px-2 mt-2 d-none" style="font-size: 0.74rem;">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i>
+                            <strong>Deep Learning Attention Heatmap:</strong> Visualizes PyTorch Layer-22 convolutional activation density. Provided for AI model explainability; does not substitute physical non-destructive ultrasonic testing.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle: Status Banner + Defect Specs + Possible Cause -->
+                <div class="col-lg-4 col-md-7">
+                    <div class="card-details-middle h-100 d-flex flex-column justify-content-between p-2">
+                        <!-- Status Banner (Red for defect, Green for clean) -->
+                        <div id="result-status-banner" class="status-alert-banner banner-detected mb-3 p-3 rounded-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="status-banner-icon-circle" id="status-banner-icon">
+                                    <i class="bi bi-exclamation-triangle-fill text-danger fs-3"></i>
+                                </div>
+                                <div>
+                                    <h4 class="status-banner-title fw-bold m-0 text-danger font-outfit" id="status-banner-title">Defect Detected</h4>
+                                    <p class="status-banner-subtitle m-0 text-secondary small fw-medium" id="status-banner-subtitle">Damage localized on railway track surface</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Defect Key Details Table -->
+                        <div class="spec-table-box p-3 rounded-3 mb-3">
+                            <table class="table table-borderless m-0 spec-detail-table">
+                                <tbody>
+                                    <tr>
+                                        <td class="spec-label">Defect Type</td>
+                                        <td class="spec-colon">:</td>
+                                        <td class="spec-value fw-bold" id="spec-defect-type">Crack</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-label">Confidence</td>
+                                        <td class="spec-colon">:</td>
+                                        <td class="spec-value fw-bold" id="spec-confidence">96.3%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-label">Location</td>
+                                        <td class="spec-colon">:</td>
+                                        <td class="spec-value fw-bold" id="spec-location">Rail (Left Side)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-label">Risk Level</td>
+                                        <td class="spec-colon">:</td>
+                                        <td class="spec-value">
+                                            <span class="badge bg-danger px-3 py-1 font-outfit fw-bold" id="spec-risk-badge">High</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Possible Cause Card -->
+                        <div class="cause-card-box p-3 rounded-3">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="bi bi-gear-fill text-primary"></i>
+                                <span class="fw-bold text-dark font-outfit small">Possible Cause</span>
+                            </div>
+                            <p class="text-secondary small m-0 fw-medium" id="spec-possible-cause">
+                                Material fatigue, excessive dynamic axle load, or thermal cyclic stress.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Detected Region (Cropped Zoom Preview) -->
+                <div class="col-lg-3 col-md-5">
+                    <div class="card-detected-region h-100 d-flex flex-column rounded-3 overflow-hidden">
+                        <div class="detected-region-header px-3 py-2 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-camera-fill text-white"></i>
+                                <span class="fw-bold text-white small font-outfit">Detected Region</span>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-dark btn-sm py-0 px-2 text-white border-0" id="btn-zoom-in" title="Zoom In" onclick="zoomCropCanvas(1.3)"><i class="bi bi-zoom-in"></i></button>
+                                <button type="button" class="btn btn-dark btn-sm py-0 px-2 text-white border-0" id="btn-zoom-out" title="Zoom Out" onclick="zoomCropCanvas(0.77)"><i class="bi bi-zoom-out"></i></button>
+                                <button type="button" class="btn btn-dark btn-sm py-0 px-2 text-white border-0" id="btn-zoom-reset" title="Reset Zoom" onclick="resetCropCanvas()"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            </div>
+                        </div>
+                        <div class="detected-region-body flex-grow-1 d-flex align-items-center justify-content-center p-2">
+                            <canvas id="crop-canvas" class="crop-preview-canvas w-100"></canvas>
+                            <div id="crop-empty-state" class="text-center p-4 text-muted d-none">
+                                <i class="bi bi-shield-check text-success fs-1 mb-2 d-block"></i>
+                                <span class="small fw-bold text-dark">Track Corridor Clear</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clean Track Notification Banner (Zero Defects) -->
+            <div id="clean-track-banner" class="alert alert-info d-none mx-3 mb-3 p-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                    <div>
+                        <div class="fw-bold text-dark" id="clean-banner-title">No defects detected by AI at configured detection threshold</div>
+                        <div class="small text-muted" id="clean-banner-desc">YOLO11 RailGuard V3 localized zero defects above the threshold. This automated result does not prove the track is defect-free. Certified physical engineering inspections are always required.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Section: 3 Guidance Tiles (Picture 3) -->
+            <div class="row g-3 px-3 mb-4" id="picture3-guidance-row">
+                <!-- Tile 1: Defect Characteristics -->
+                <div class="col-md-4">
+                    <div class="guidance-tile tile-blue h-100 p-3 rounded-3">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+                            <h5 class="guidance-tile-title text-primary fw-bold font-outfit m-0">Defect Characteristics</h5>
+                        </div>
+                        <ul class="guidance-tile-list ps-3 m-0 small text-secondary fw-medium" id="tile-characteristics-list">
+                            <li>Visible surface irregularity on rail head</li>
+                            <li>Localized along wheel-rail contact zone</li>
+                            <li>Requires ultrasonic flaw depth verification</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tile 2: Safety Risk -->
+                <div class="col-md-4">
+                    <div class="guidance-tile tile-amber h-100 p-3 rounded-3">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                            <h5 class="guidance-tile-title text-warning fw-bold font-outfit m-0">Safety Risk</h5>
+                        </div>
+                        <div class="fs-4 fw-bold text-danger mb-1 font-outfit" id="tile-risk-level-heading">High Risk</div>
+                        <p class="small text-secondary fw-medium m-0" id="tile-risk-statement">
+                            May lead to progressive structural failure, broken rail, or gauge widening if left untreated.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tile 3: Maintenance Recommendations -->
+                <div class="col-md-4">
+                    <div class="guidance-tile tile-green h-100 p-3 rounded-3">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-wrench-adjustable text-success fs-5"></i>
+                            <h5 class="guidance-tile-title text-success fw-bold font-outfit m-0">Maintenance Recommendations</h5>
+                        </div>
+                        <ul class="guidance-tile-checklist ps-0 m-0 small text-secondary fw-medium" id="tile-recommendations-list">
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Inspect the affected rail segment immediately.</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Execute joint tightening or rail grind/replacement.</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Monitor track section with ultrasonic flaw detector.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons Row (Picture 3) -->
+            <div class="d-flex flex-wrap align-items-center gap-3 px-3 mb-4">
+                <button class="btn btn-primary px-4 py-2 font-outfit fw-bold d-inline-flex align-items-center gap-2" id="btn-download-pdf-report">
+                    <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF Report
+                </button>
+                <button class="btn btn-outline-primary px-4 py-2 font-outfit fw-bold d-inline-flex align-items-center gap-2" id="btn-analyze-another">
+                    <i class="bi bi-arrow-repeat"></i> Analyze Another Image
+                </button>
+                <button class="btn btn-rg d-none" id="btn-new-inspection-repeat">Inspect Another</button>
+            </div>
+
+            <!-- Feature B: Before vs After Track Inspection Comparison -->
+            <div class="panel-card p-3 mb-4 mx-3 rounded-3 d-none" id="comparison-panel">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-left-right text-primary fs-5"></i>
+                        <h5 class="fw-bold text-dark font-outfit m-0">Before vs After Track Inspection Comparison</h5>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small font-outfit">Track Corridor Milestone</span>
+                </div>
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-5 text-center">
+                        <div class="small fw-bold text-muted mb-1"><i class="bi bi-calendar3 me-1"></i> Baseline / Past Inspection (<span id="prev-inspection-date">Baseline Record</span>)</div>
+                        <div class="border rounded-2 p-1 bg-light text-center" style="min-height: 180px; display: flex; align-items: center; justify-content: center;">
+                            <img id="prev-inspection-img" src="../samples/sample_clean_track.jpg" alt="Previous inspection" style="max-height: 180px; max-width: 100%; object-fit: contain; border-radius: 4px;">
+                        </div>
+                        <div class="small text-muted mt-1 fw-medium" id="prev-inspection-meta">Milestone: Verified Baseline &middot; Defect Count: 0 (Normal)</div>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <div class="p-2 rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-arrow-right fs-4"></i>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge" id="comparison-delta-badge" style="background: #ef4444; color: #fff; font-size: 0.8rem;">Change Detected</span>
+                            <div class="small text-muted mt-1" style="font-size: 0.72rem;">Timeline Progression</div>
+                        </div>
+                    </div>
+                    <div class="col-md-5 text-center">
+                        <div class="small fw-bold text-primary mb-1"><i class="bi bi-calendar-check me-1"></i> Current Inspection (<span id="curr-inspection-date">Active Inspection</span>)</div>
+                        <div class="border rounded-2 p-1 bg-light text-center" style="min-height: 180px; display: flex; align-items: center; justify-content: center;">
+                            <img id="curr-inspection-img" src="../samples/sample_joint_defect.jpg" alt="Current inspection" style="max-height: 180px; max-width: 100%; object-fit: contain; border-radius: 4px;">
+                        </div>
+                        <div class="small text-muted mt-1 fw-medium" id="curr-inspection-meta">Active Section &middot; Defect Count: 1</div>
+                    </div>
+                </div>
+                <div class="small text-secondary mt-3 p-2 rounded-2" style="background: #f8fafc; border-left: 3px solid #2563eb;">
+                    <i class="bi bi-info-circle-fill text-primary me-1"></i>
+                    <strong>Location Verification Note:</strong> Correlates geo-referenced track section milestones to analyze surface wear progression, fishplate loosening velocity, and structural degradation over inspection cycles.
+                </div>
+            </div>
+
+            <!-- Detected Defect Coordinates Breakdown (Collapsible) -->
+            <div class="px-3 mb-3 d-none">
+                <div class="border rounded-3 p-3 bg-light">
+                    <div class="d-flex align-items-center justify-content-between" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#detailed-detections-collapse">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-list-check text-primary"></i>
+                            <span class="fw-bold text-dark font-outfit small">Detailed Defect Bounding Boxes &amp; Coordinates</span>
+                        </div>
+                        <i class="bi bi-chevron-down text-muted"></i>
+                    </div>
+                    <div class="collapse mt-3" id="detailed-detections-collapse">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Defect Class</th>
+                                        <th>Confidence</th>
+                                        <th>Severity</th>
+                                        <th>Coordinates [xMin, yMin, xMax, yMax]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detections-tbody">
+                                    <tr><td colspan="5" class="text-center text-muted py-2">No defect detections recorded.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Engineering Knowledge Container (Collapsible or Auxiliary) -->
+            <div id="engineering-guidance-container" class="mb-3 d-none"></div>
+
+            <!-- Bottom Section: Inspection History Table (Picture 3) -->
+            <div class="card-embedded-history mx-3 mb-3 rounded-3 overflow-hidden">
+                <div class="history-ribbon d-flex align-items-center justify-content-between px-3 py-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history text-white"></i>
+                        <span class="fw-bold text-white font-outfit">Inspection History</span>
+                    </div>
+                    <a href="inspection-history.html" class="text-white small text-decoration-none fw-semibold">View All <i class="bi bi-chevron-right"></i></a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 history-embedded-table">
+                        <thead>
+                            <tr>
+                                <th>Date &amp; Time</th>
+                                <th>Defect Type</th>
+                                <th>Risk Level</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="embedded-history-tbody">
+                            <tr>
+                                <td colspan="5" class="text-center py-3 text-muted">Loading recent inspection records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Disclaimer Notice -->
+            <div class="disclaimer-notice-box mx-3 mb-3 p-2 rounded-2 small text-muted">
+                <i class="bi bi-info-circle-fill text-info me-1"></i>
+                <strong>Notice:</strong> This automated assessment is an AI-assisted detection preview based on YOLO11 deep learning inference and does NOT constitute an official railway safety certification. Physical non-destructive flaw detection (NDT) remains strictly required.
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Work Order Modal -->
+    <div class="modal fade" id="maintenanceModal" tabindex="-1" aria-labelledby="maintenanceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #ffffff; border: 1px solid var(--rg-border); color: #0f172a;">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title font-outfit fw-bold text-dark" id="maintenanceModalLabel">
+                        <i class="bi bi-tools text-primary me-2"></i> Create Maintenance Work Order
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="m-modal-error"></div>
+                    <div class="alert alert-success d-none" id="m-modal-success"></div>
+                    
+                    <form id="maintenance-form">
+                        <input type="hidden" id="m-inspection-id">
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Linked Inspection</label>
+                            <input type="text" class="form-control" id="m-inspection-display" readonly style="background: #f8fafc; color: #334155; font-weight: 600;">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="m-title" class="form-label small fw-bold text-dark">Work Order Title *</label>
+                            <input type="text" class="form-control" id="m-title" required placeholder="e.g. Urgent Rail Joint Replacement">
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label for="m-priority" class="form-label small fw-bold text-dark">Priority *</label>
+                                <select class="form-select fw-semibold" id="m-priority" required>
+                                    <option value="CRITICAL">CRITICAL</option>
+                                    <option value="HIGH">HIGH</option>
+                                    <option value="MEDIUM" selected>MEDIUM</option>
+                                    <option value="LOW">LOW</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="m-assigned" class="form-label small fw-bold text-dark">Assigned Personnel / Unit *</label>
+                                <input type="text" class="form-control" id="m-assigned" required placeholder="e.g. Track Maintenance Unit 3">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="m-scheduled" class="form-label small fw-bold text-dark">Scheduled Maintenance Date</label>
+                            <input type="datetime-local" class="form-control" id="m-scheduled">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="m-desc" class="form-label small fw-bold text-dark">Engineering Description &amp; Instructions</label>
+                            <textarea class="form-control" id="m-desc" rows="3" placeholder="Provide details on required track repairs and safety precautions..."></textarea>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="button" class="btn btn-outline-secondary font-outfit fw-bold" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary font-outfit fw-bold" id="btn-submit-maintenance">
+                                <i class="bi bi-check2-circle me-1"></i> Issue Work Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div><!-- /.inspection-container -->
+    </main><!-- /.app-main -->
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/navigation.js"></script>
+    <script src="../js/defect-knowledge.js"></script>
+    <script src="../js/inspection.js"></script>
+</body>
+</html>
