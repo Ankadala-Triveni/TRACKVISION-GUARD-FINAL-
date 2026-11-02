@@ -45,58 +45,23 @@
 <body class="login-page-body">
 
     <div class="login-card register-card">
-        <!-- Left Brand & Features Column -->
-        <div class="login-card-brand-col">
-            <div class="brand-top">
-                <div class="login-brand-icon">
-                    <i class="bi bi-train-front"></i>
-                </div>
-                <h1 class="login-brand-title">TRACKVISION GUARD</h1>
-                <p class="login-brand-subtitle">Railway Track Defect Detection and Safety Monitoring System</p>
+        <!-- Brand Header (Centered Train Logo & Title) -->
+        <div class="login-brand-header">
+            <div class="login-brand-icon">
+                <i class="bi bi-train-front"></i>
             </div>
-
-            <div class="brand-features my-4">
-                <div class="brand-feature-item">
-                    <div class="feature-icon"><i class="bi bi-shield-lock-fill"></i></div>
-                    <div>
-                        <div class="feature-title">Engineering Account Access</div>
-                        <div class="feature-desc">Certified credentials for Permanent-Way Inspectors and Track Engineers</div>
-                    </div>
-                </div>
-                <div class="brand-feature-item">
-                    <div class="feature-icon"><i class="bi bi-cpu-fill"></i></div>
-                    <div>
-                        <div class="feature-title">YOLO11 AI Vision Suite</div>
-                        <div class="feature-desc">Sub-second multi-defect detection with Grad-CAM visual heatmaps</div>
-                    </div>
-                </div>
-                <div class="brand-feature-item">
-                    <div class="feature-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
-                    <div>
-                        <div class="feature-title">RDSO USFD Reports</div>
-                        <div class="feature-desc">Automated maintenance dispatch and one-click PDF compliance records</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="brand-bottom">
-                <div class="security-badge">
-                    <i class="bi bi-shield-check"></i>
-                    <span>Official Railway Maintenance Portal &bull; Enterprise Secure</span>
-                </div>
-            </div>
+            <h1 class="login-brand-title">TRACKVISION GUARD</h1>
+            <p class="login-brand-subtitle">Railway Track Defect Detection and Safety Monitoring System</p>
         </div>
 
-        <!-- Right Form Column -->
-        <div class="login-card-form-col">
-            <div class="mb-3">
-                <h2 class="h4 fw-bold text-dark font-outfit mb-1">Create Account</h2>
-                <p class="text-muted small mb-0">Register your credentials to access the track safety monitoring platform</p>
-            </div>
+        <div class="mb-3 text-center">
+            <h2 class="h5 fw-bold text-dark font-outfit mb-1">Create Account</h2>
+            <p class="text-muted small mb-0">Register your credentials to access the track safety monitoring platform</p>
+        </div>
 
-            <!-- Alert Notification Box -->
-            <div class="login-alert login-alert-danger" id="alert-error" role="alert"></div>
-            <div class="login-alert login-alert-success" id="alert-success" role="alert"></div>
+        <!-- Alert Notification Box -->
+        <div class="login-alert login-alert-danger" id="alert-error" role="alert"></div>
+        <div class="login-alert login-alert-success" id="alert-success" role="alert"></div>
 
             <!-- Registration Form -->
             <form id="register-form" novalidate>
@@ -279,7 +244,6 @@
             <div class="login-footer">
                 Already have an account? <a href="login.html" class="login-link fw-semibold">Sign In here</a>
             </div>
-        </div>
     </div>
 
     <!-- Bootstrap 5 Bundle JS -->

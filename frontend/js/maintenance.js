@@ -3,8 +3,8 @@
  * Manages persistent engineering repair orders via Spring Boot & MySQL.
  */
 
-const API_URL = 'http://localhost:8080/api';
-const token = localStorage.getItem('token');
+var API_URL = (window.RAILGUARD_CONFIG && window.RAILGUARD_CONFIG.API_URL) ? window.RAILGUARD_CONFIG.API_URL : 'http://localhost:8080/api';
+var token = localStorage.getItem('token');
 
 let allTasks = [];
 let allInspections = [];

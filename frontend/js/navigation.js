@@ -67,6 +67,18 @@ function highlightCurrentNavLink() {
     const currentPath = window.location.pathname.split('/').pop().toLowerCase() || 'dashboard.html';
     const navLinks = document.querySelectorAll('.nav-link-rg');
 
+    if (currentPath === 'dashboard.html') {
+        const hash = window.location.hash;
+        if (hash) {
+            const hashLink = document.querySelector(`.sidebar-menu a[href="${hash}"]`);
+            if (hashLink) {
+                navLinks.forEach(l => l.classList.remove('active'));
+                hashLink.classList.add('active');
+            }
+        }
+        return;
+    }
+
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
         if (href && href.toLowerCase() === currentPath) {

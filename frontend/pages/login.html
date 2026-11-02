@@ -19,207 +19,166 @@
 <body class="login-page-body">
 
     <div class="login-card">
-        <!-- Left Brand & Features Column -->
-        <div class="login-card-brand-col">
-            <div class="brand-top">
-                <div class="login-brand-icon">
-                    <i class="bi bi-train-front"></i>
-                </div>
-                <h1 class="login-brand-title">TRACKVISION GUARD</h1>
-                <p class="login-brand-subtitle">Railway Track Defect Detection and Safety Monitoring System</p>
+        <!-- Brand Header: Logo and Title at Top -->
+        <div class="login-brand-header">
+            <div class="login-brand-icon">
+                <i class="bi bi-train-front"></i>
             </div>
-
-            <div class="brand-features my-4">
-                <div class="brand-feature-item">
-                    <div class="feature-icon"><i class="bi bi-cpu-fill"></i></div>
-                    <div>
-                        <div class="feature-title">YOLO11 AI Vision Engine</div>
-                        <div class="feature-desc">Sub-second track defect localization with Grad-CAM visual heatmaps</div>
-                    </div>
-                </div>
-                <div class="brand-feature-item">
-                    <div class="feature-icon"><i class="bi bi-geo-alt-fill"></i></div>
-                    <div>
-                        <div class="feature-title">All-India GIS Network</div>
-                        <div class="feature-desc">22 states &amp; 462 georeferenced milestones with GeoJSON tracking</div>
-                    </div>
-                </div>
-                <div class="brand-feature-item">
-                    <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
-                    <div>
-                        <div class="feature-title">Automated Compliance</div>
-                        <div class="feature-desc">Instant RDSO USFD &amp; IRS T-12 audit logs and maintenance dispatch</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="brand-bottom">
-                <div class="security-badge">
-                    <i class="bi bi-lock-fill"></i>
-                    <span>Authorized Railway Engineering Portal &bull; JWT Secured</span>
-                </div>
-            </div>
+            <h1 class="login-brand-title">TRACKVISION GUARD</h1>
+            <p class="login-brand-subtitle">Railway Track Defect Detection and Safety Monitoring System</p>
         </div>
 
-        <!-- Right Form Column -->
-        <div class="login-card-form-col">
+        <!-- Alert Notification Box -->
+        <div class="login-alert login-alert-danger" id="alert-error" role="alert"></div>
+        <div class="login-alert login-alert-success" id="alert-success" role="alert"></div>
+
+        <!-- Login Form -->
+        <form id="login-form" novalidate>
+            <!-- Email / Identifier Field -->
             <div class="mb-3">
-                <h2 class="h4 fw-bold text-dark font-outfit mb-1">Sign In</h2>
-                <p class="text-muted small mb-0">Enter your credentials to access the safety monitoring portal</p>
+                <label for="usernameOrEmail" class="login-form-label">
+                    <span>Email or Username</span>
+                </label>
+                <input 
+                    type="text" 
+                    class="login-input" 
+                    id="usernameOrEmail" 
+                    placeholder="Enter your email or username" 
+                    required 
+                    autocomplete="username"
+                    spellcheck="false"
+                >
             </div>
 
-            <!-- Alert Notification Box -->
-            <div class="login-alert login-alert-danger" id="alert-error" role="alert"></div>
-            <div class="login-alert login-alert-success" id="alert-success" role="alert"></div>
-
-            <!-- Login Form -->
-            <form id="login-form" novalidate>
-                <!-- Email / Identifier Field -->
-                <div class="mb-3">
-                    <label for="usernameOrEmail" class="login-form-label">
-                        <span>Email or Username</span>
-                    </label>
+            <!-- Password Field with Forgot Link -->
+            <div class="mb-3">
+                <div class="login-form-label">
+                    <label for="password" class="m-0">Password</label>
+                    <a href="#" id="link-forgot-password" class="login-link">Forgot password?</a>
+                </div>
+                <div class="login-input-group">
                     <input 
-                        type="text" 
+                        type="password" 
                         class="login-input" 
-                        id="usernameOrEmail" 
-                        placeholder="Enter your email or username" 
+                        id="password" 
+                        placeholder="Minimum 8 characters" 
                         required 
-                        autocomplete="username"
-                        spellcheck="false"
+                        autocomplete="current-password"
                     >
+                    <button type="button" class="login-toggle-btn" id="toggle-password" aria-label="Toggle password visibility">
+                        <i class="bi bi-eye" id="toggle-icon"></i>
+                    </button>
                 </div>
-
-                <!-- Password Field with Forgot Link -->
-                <div class="mb-3">
-                    <div class="login-form-label">
-                        <label for="password" class="m-0">Password</label>
-                        <a href="#" id="link-forgot-password" class="login-link">Forgot password?</a>
-                    </div>
-                    <div class="login-input-group">
-                        <input 
-                            type="password" 
-                            class="login-input" 
-                            id="password" 
-                            placeholder="Minimum 8 characters" 
-                            required 
-                            autocomplete="current-password"
-                        >
-                        <button type="button" class="login-toggle-btn" id="toggle-password" aria-label="Toggle password visibility">
-                            <i class="bi bi-eye" id="toggle-icon"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Security CAPTCHA Challenge (Alphanumeric Code) -->
-                <div class="mb-3 p-2 rounded" style="background: #f0f7fd; border: 1px solid var(--login-border);">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="small fw-semibold text-dark">
-                            <i class="bi bi-shield-check text-primary me-1"></i> Security Verification
-                        </span>
-                        <span class="text-muted" style="font-size: 0.75rem;">Anti-Bot Check</span>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <div style="background: #e0f2fe; border: 1.5px solid #94a3b8; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 160px; overflow: hidden;">
-                            <canvas id="login-captcha-canvas" width="160" height="46" style="display: block; border-radius: 4px; cursor: pointer; background: #e0f2fe;" title="Click to refresh CAPTCHA"></canvas>
-                        </div>
-                        <button type="button" class="btn btn-outline-secondary btn-sm p-2" id="btn-refresh-captcha" title="Get new CAPTCHA code">
-                            <i class="bi bi-arrow-repeat fs-6"></i>
-                        </button>
-                    </div>
-                    <script>
-                        (function() {
-                            function drawQuickLogin() {
-                                var cv = document.getElementById('login-captcha-canvas');
-                                if (!cv) return;
-                                var chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-                                var code = '';
-                                for (var i = 0; i < 5; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
-                                window.__RG_LOGIN_CAPTCHA = code;
-                                var ctx = cv.getContext('2d');
-                                var w = 160, h = 46;
-                                var grad = ctx.createLinearGradient(0, 0, w, h);
-                                grad.addColorStop(0, '#e0f2fe');
-                                grad.addColorStop(1, '#dbeafe');
-                                ctx.fillStyle = grad;
-                                ctx.fillRect(0, 0, w, h);
-                                ctx.strokeStyle = '#93c5fd';
-                                ctx.lineWidth = 1.5;
-                                for (var l = 0; l < 4; l++) {
-                                    ctx.beginPath();
-                                    ctx.moveTo(Math.random()*w, Math.random()*h);
-                                    ctx.bezierCurveTo(Math.random()*w, Math.random()*h, Math.random()*w, Math.random()*h, Math.random()*w, Math.random()*h);
-                                    ctx.stroke();
-                                }
-                                var colors = ['#1e40af', '#0369a1', '#1d4ed8', '#1e3a8a', '#2563eb'];
-                                var step = (w - 24) / code.length;
-                                for (var c = 0; c < code.length; c++) {
-                                    ctx.save();
-                                    var x = 14 + c * step;
-                                    var y = 32 + (Math.random() * 4 - 2);
-                                    ctx.translate(x, y);
-                                    ctx.rotate((Math.random() * 0.28) - 0.14);
-                                    ctx.font = 'bold 23px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
-                                    ctx.fillStyle = colors[c % colors.length];
-                                    ctx.fillText(code[c], 0, 0);
-                                    ctx.restore();
-                                }
-                            }
-                            if (document.readyState === 'loading') {
-                                document.addEventListener('DOMContentLoaded', drawQuickLogin);
-                            } else {
-                                drawQuickLogin();
-                            }
-                            setTimeout(drawQuickLogin, 50);
-                        })();
-                    </script>
-                    <input 
-                        type="text" 
-                        class="login-input" 
-                        id="login-captcha-answer" 
-                        placeholder="Enter characters shown above" 
-                        maxlength="6" 
-                        autocomplete="off" 
-                        required 
-                        style="letter-spacing: 2px; font-weight: 700; text-transform: uppercase;"
-                    >
-                </div>
-
-                <!-- Remember Me Checkbox -->
-                <div class="mb-3 d-flex align-items-center">
-                    <input class="form-check-input me-2" type="checkbox" id="remember-me" style="cursor: pointer;">
-                    <label class="form-check-label small text-secondary fw-medium m-0" for="remember-me" style="cursor: pointer;">
-                        Remember me
-                    </label>
-                </div>
-
-                <!-- Sign In Button -->
-                <button type="submit" class="btn-login-slate" id="btn-submit">
-                    <span class="spinner-border spinner-border-sm d-none" id="btn-spinner" role="status" aria-hidden="true"></span>
-                    <span id="btn-text">Sign In</span>
-                </button>
-            </form>
-
-            <!-- Divider -->
-            <div class="login-divider">
-                <span>OR</span>
             </div>
 
-            <!-- Google Sign-In Button -->
-            <button type="button" class="btn-login-google" id="btn-google-login">
-                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <span>Continue with Google</span>
+            <!-- Security CAPTCHA Challenge (Alphanumeric Code) -->
+            <div class="mb-3 p-2 rounded" style="background: #f0f7fd; border: 1px solid var(--login-border);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="small fw-semibold text-dark">
+                        <i class="bi bi-shield-check text-primary me-1"></i> Security Verification
+                    </span>
+                    <span class="text-muted" style="font-size: 0.75rem;">Anti-Bot Check</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div style="background: #e0f2fe; border: 1.5px solid #94a3b8; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 160px; overflow: hidden;">
+                        <canvas id="login-captcha-canvas" width="160" height="46" style="display: block; border-radius: 4px; cursor: pointer; background: #e0f2fe;" title="Click to refresh CAPTCHA"></canvas>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm p-2" id="btn-refresh-captcha" title="Get new CAPTCHA code">
+                        <i class="bi bi-arrow-repeat fs-6"></i>
+                    </button>
+                </div>
+                <script>
+                    (function() {
+                        function drawQuickLogin() {
+                            var cv = document.getElementById('login-captcha-canvas');
+                            if (!cv) return;
+                            var chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+                            var code = '';
+                            for (var i = 0; i < 5; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+                            window.__RG_LOGIN_CAPTCHA = code;
+                            var ctx = cv.getContext('2d');
+                            var w = 160, h = 46;
+                            var grad = ctx.createLinearGradient(0, 0, w, h);
+                            grad.addColorStop(0, '#e0f2fe');
+                            grad.addColorStop(1, '#dbeafe');
+                            ctx.fillStyle = grad;
+                            ctx.fillRect(0, 0, w, h);
+                            ctx.strokeStyle = '#93c5fd';
+                            ctx.lineWidth = 1.5;
+                            for (var l = 0; l < 4; l++) {
+                                ctx.beginPath();
+                                ctx.moveTo(Math.random()*w, Math.random()*h);
+                                ctx.bezierCurveTo(Math.random()*w, Math.random()*h, Math.random()*w, Math.random()*h, Math.random()*w, Math.random()*h);
+                                ctx.stroke();
+                            }
+                            var colors = ['#1e40af', '#0369a1', '#1d4ed8', '#1e3a8a', '#2563eb'];
+                            var step = (w - 24) / code.length;
+                            for (var c = 0; c < code.length; c++) {
+                                ctx.save();
+                                var x = 14 + c * step;
+                                var y = 32 + (Math.random() * 4 - 2);
+                                ctx.translate(x, y);
+                                ctx.rotate((Math.random() * 0.28) - 0.14);
+                                ctx.font = 'bold 23px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+                                ctx.fillStyle = colors[c % colors.length];
+                                ctx.fillText(code[c], 0, 0);
+                                ctx.restore();
+                            }
+                        }
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', drawQuickLogin);
+                        } else {
+                            drawQuickLogin();
+                        }
+                        setTimeout(drawQuickLogin, 50);
+                    })();
+                </script>
+                <input 
+                    type="text" 
+                    class="login-input" 
+                    id="login-captcha-answer" 
+                    placeholder="Enter characters shown above" 
+                    maxlength="6" 
+                    autocomplete="off" 
+                    required 
+                    style="letter-spacing: 2px; font-weight: 700; text-transform: uppercase;"
+                >
+            </div>
+
+            <!-- Remember Me Checkbox -->
+            <div class="mb-3 d-flex align-items-center">
+                <input class="form-check-input me-2" type="checkbox" id="remember-me" style="cursor: pointer;">
+                <label class="form-check-label small text-secondary fw-medium m-0" for="remember-me" style="cursor: pointer;">
+                    Remember me
+                </label>
+            </div>
+
+            <!-- Sign In Button -->
+            <button type="submit" class="btn-login-slate" id="btn-submit">
+                <span class="spinner-border spinner-border-sm d-none" id="btn-spinner" role="status" aria-hidden="true"></span>
+                <span id="btn-text">Sign In</span>
             </button>
+        </form>
 
-            <!-- Registration Link -->
-            <div class="login-footer">
-                Don't have an account? <a href="register.html" class="login-link fw-semibold">Register here</a>
-            </div>
+        <!-- Divider -->
+        <div class="login-divider">
+            <span>OR</span>
+        </div>
+
+        <!-- Google Sign-In Button -->
+        <button type="button" class="btn-login-google" id="btn-google-login">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continue with Google</span>
+        </button>
+
+        <!-- Registration Link -->
+        <div class="login-footer">
+            Don't have an account? <a href="register.html" class="login-link fw-semibold">Register here</a>
         </div>
     </div>
 

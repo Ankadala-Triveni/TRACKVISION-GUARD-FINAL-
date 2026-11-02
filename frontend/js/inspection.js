@@ -11,8 +11,8 @@
  * - Integration with persistent Maintenance Work Orders
  */
 
-const API_URL = 'http://localhost:8080/api';
-const token = localStorage.getItem('token');
+var API_URL = (window.RAILGUARD_CONFIG && window.RAILGUARD_CONFIG.API_URL) ? window.RAILGUARD_CONFIG.API_URL : 'http://localhost:8080/api';
+var token = localStorage.getItem('token');
 
 if (!token) {
     window.location.href = 'login.html';
@@ -1126,7 +1126,7 @@ async function loadEmbeddedHistory() {
     if (!tbody) return;
 
     try {
-        const token = localStorage.getItem('token');
+        var token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/inspections`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1540,7 +1540,7 @@ async function populateComparisonPanel(currentInspection) {
  */
 async function downloadInspectionPdf(inspectionId) {
     try {
-        const token = localStorage.getItem('token');
+        var token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/inspections/${inspectionId}/pdf`, {
             headers: {
                 'Authorization': `Bearer ${token}`
