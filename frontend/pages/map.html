@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="TRACK DAMAGE ANALYZER – Defect Location GIS Map">
-    <title>Defect Map – TRACK DAMAGE ANALYZER</title>
+    <meta name="description" content="TRACKVISION GUARD – Defect Location GIS Map">
+    <title>Defect Map – TRACKVISION GUARD</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,11 +21,12 @@
     <style>
         #gis-map {
             width: 100%;
-            height: 640px;
-            border-radius: 16px;
+            height: 680px;
+            min-height: 520px;
+            border-radius: 14px;
             border: 1px solid var(--rg-border);
             z-index: 1;
-            background: #e5e7eb;
+            background: #e2e8f0;
         }
         .map-legend {
             background: #ffffff;
@@ -73,8 +74,8 @@
                 <i class="bi bi-train-front"></i>
             </div>
             <div>
-                <h1 class="brand-title">TRACK DAMAGE ANALYZER</h1>
-                <div class="text-muted" style="font-size: 0.68rem; letter-spacing: 0.5px; line-height: 1.2;">AI-Powered Railway Track Defect Detection, Geospatial Inspection, Risk Assessment and Maintenance Management</div>
+                <h1 class="brand-title">TRACKVISION GUARD</h1>
+                <div class="text-muted" style="font-size: 0.68rem; letter-spacing: 0.5px; line-height: 1.2;">Railway Track Defect Detection and Safety Monitoring System</div>
             </div>
         </div>
 
@@ -204,88 +205,82 @@
             </div>
         </div>
 
-        <!-- Filter & Control Bar -->
+        <!-- Primary Map Control Toolbar (Prioritizing State, Defect Type, Risk, Source, and Actions) -->
         <div class="panel-card mb-4 p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-2 flex-wrap flex-grow-1">
-                <!-- Search input -->
-                <div class="input-group input-group-sm" style="max-width: 240px;">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" id="filter-search" class="form-control form-control-sm border-start-0" placeholder="Search ID or Section...">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- 1. Indian State Selector -->
+                <div class="d-flex align-items-center gap-1">
+                    <label for="filter-state" class="small fw-bold text-dark me-1"><i class="bi bi-geo-alt-fill text-primary"></i> State:</label>
+                    <select id="filter-state" class="form-select form-select-sm fw-semibold" style="min-width: 175px;">
+                        <option value="ALL">All Indian States (National View)</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="West Bengal">West Bengal</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Odisha">Odisha</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Haryana">Haryana</option>
+                    </select>
                 </div>
 
-                <!-- State filter -->
-                <select id="filter-state" class="form-select form-select-sm" style="width: auto;">
-                    <option value="ALL">All States</option>
-                    <option value="Uttar Pradesh">Uttar Pradesh</option>
-                    <option value="Maharashtra">Maharashtra</option>
-                    <option value="West Bengal">West Bengal</option>
-                    <option value="Bihar">Bihar</option>
-                    <option value="Madhya Pradesh">Madhya Pradesh</option>
-                    <option value="Andhra Pradesh">Andhra Pradesh</option>
-                    <option value="Tamil Nadu">Tamil Nadu</option>
-                    <option value="Gujarat">Gujarat</option>
-                    <option value="Rajasthan">Rajasthan</option>
-                    <option value="Karnataka">Karnataka</option>
-                    <option value="Odisha">Odisha</option>
-                    <option value="Assam">Assam</option>
-                    <option value="Kerala">Kerala</option>
-                    <option value="Punjab">Punjab</option>
-                </select>
+                <!-- 2. Defect Type Filter -->
+                <div class="d-flex align-items-center gap-1">
+                    <label for="filter-category" class="small fw-bold text-dark me-1">Defect:</label>
+                    <select id="filter-category" class="form-select form-select-sm" style="min-width: 155px;">
+                        <option value="ALL">All Defect Types</option>
+                        <option value="Broken Rail">Broken Rail</option>
+                        <option value="Crack">Crack / Fissure</option>
+                        <option value="Head Checks">Head Checks / RCF</option>
+                        <option value="Join Bar">Fishplate / Joint Bar</option>
+                        <option value="Squats">Squats</option>
+                        <option value="Corrosion">Corrosion / Rust</option>
+                        <option value="Clean Track">Normal / Clear Track</option>
+                    </select>
+                </div>
 
-                <!-- Zone filter -->
-                <select id="filter-zone" class="form-select form-select-sm" style="width: auto;">
-                    <option value="ALL">All Zones (16 Zones)</option>
-                    <option value="Northern Railway">Northern Railway</option>
-                    <option value="Western Railway">Western Railway</option>
-                    <option value="Central Railway">Central Railway</option>
-                    <option value="Eastern Railway">Eastern Railway</option>
-                    <option value="Southern Railway">Southern Railway</option>
-                    <option value="South Central Railway">South Central Railway</option>
-                    <option value="South Eastern Railway">South Eastern Railway</option>
-                    <option value="South Western Railway">South Western Railway</option>
-                    <option value="East Coast Railway">East Coast Railway</option>
-                    <option value="North Central Railway">North Central Railway</option>
-                    <option value="North Western Railway">North Western Railway</option>
-                    <option value="West Central Railway">West Central Railway</option>
-                    <option value="East Central Railway">East Central Railway</option>
-                    <option value="Northeast Frontier Railway">Northeast Frontier Railway</option>
-                    <option value="Southeast Central Railway">Southeast Central Railway</option>
-                    <option value="Konkan Railway">Konkan Railway</option>
-                </select>
+                <!-- 3. Risk / Severity Filter -->
+                <div class="d-flex align-items-center gap-1">
+                    <label for="filter-risk" class="small fw-bold text-dark me-1">Severity:</label>
+                    <select id="filter-risk" class="form-select form-select-sm" style="min-width: 145px;">
+                        <option value="ALL">All Severities</option>
+                        <option value="CRITICAL">Critical Risk (Red)</option>
+                        <option value="HIGH">High Risk (Orange)</option>
+                        <option value="MEDIUM">Medium Risk (Yellow)</option>
+                        <option value="LOW">Low Risk / Safe (Green)</option>
+                    </select>
+                </div>
 
-                <!-- Defect Category filter -->
-                <select id="filter-category" class="form-select form-select-sm" style="width: auto;">
-                    <option value="ALL">All Defect Types</option>
-                    <option value="Broken Rail">Broken Rail</option>
-                    <option value="Crack">Crack / Fissure</option>
-                    <option value="Head Checks">Head Checks</option>
-                    <option value="Join Bar">Fishplate / Joint Bar</option>
-                    <option value="Squats">Squats</option>
-                    <option value="Corrosion">Corrosion / Rust</option>
-                </select>
+                <!-- 4. Data Source Indicator -->
+                <div class="badge bg-light text-dark border px-2 py-2 d-inline-flex align-items-center gap-1 small" title="Authentic Indian Railways Zone Audits & Geotagged Field Reports">
+                    <i class="bi bi-shield-check text-success"></i>
+                    <span class="text-muted" style="font-size: 0.75rem;">Source:</span>
+                    <strong style="font-size: 0.78rem;">CRS &amp; Zone Audits</strong>
+                </div>
+            </div>
 
-                <!-- Risk filter -->
-                <select id="filter-risk" class="form-select form-select-sm" style="width: auto;">
-                    <option value="ALL">All Risk Levels</option>
-                    <option value="CRITICAL">Critical Risk</option>
-                    <option value="HIGH">High Risk</option>
-                    <option value="MEDIUM">Medium Risk</option>
-                    <option value="LOW">Low Risk</option>
-                </select>
-
-                <button class="btn btn-outline-primary btn-sm" id="btn-recenter-map">
-                    <i class="bi bi-arrows-fullscreen me-1"></i> India View
+            <!-- Action Buttons: Reset View & India-Wide View -->
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-reset-map" title="Reset all filters to default">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset View
+                </button>
+                <button type="button" class="btn btn-primary btn-sm px-3" id="btn-recenter-map" title="Zoom to All-India National Map">
+                    <i class="bi bi-globe-central-south me-1"></i> India-Wide View
                 </button>
             </div>
-            
-            <!-- Map Legend -->
-            <div class="map-legend d-flex align-items-center gap-3 flex-wrap m-0">
-                <span><span class="legend-indicator" style="background: #ef4444;"></span>Critical</span>
-                <span><span class="legend-indicator" style="background: #f97316;"></span>High</span>
-                <span><span class="legend-indicator" style="background: #eab308;"></span>Medium</span>
-                <span><span class="legend-indicator" style="background: #10b981;"></span>Low</span>
-            </div>
         </div>
+
+        <!-- Hidden input for backwards compatibility if needed -->
+        <input type="hidden" id="filter-search" value="">
+        <input type="hidden" id="filter-zone" value="ALL">
 
         <!-- Map Container Card (Always Visible) -->
         <div class="panel-card p-2 mb-4">

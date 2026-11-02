@@ -1,5 +1,5 @@
 /**
- * TRACK DAMAGE ANALYZER – Unified Single Page Application (SPA) Controller
+ * TRACKVISION GUARD – Unified Single Page Application (SPA) Controller
  * Integrates all 9 operational modules into a zero-reload, reactive dashboard:
  * - #/dashboard   : Operational telemetry, defect charts, recent scans
  * - #/inspection  : Clean drag-drop upload & YOLO11 V3 inference
@@ -1026,7 +1026,7 @@ function initLeafletMapInstance() {
     }).setView([22.5, 79.5], 5);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors · Track Damage Analyzer GIS',
+        attribution: '&copy; OpenStreetMap contributors · TrackVision Guard GIS',
         maxZoom: 18
     }).addTo(mapInstance);
 
@@ -1621,7 +1621,7 @@ function initPdfDownloadControls() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'TrackDamageAnalyzer_HighRisk_Safety_Summary.pdf';
+            a.download = 'TrackVisionGuard_HighRisk_Safety_Summary.pdf';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1643,7 +1643,7 @@ async function downloadInspectionPdf(inspectionId) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `TrackDamageAnalyzer_Inspection_${inspectionId}.pdf`;
+        a.download = `TrackVisionGuard_Inspection_${inspectionId}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

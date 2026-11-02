@@ -139,7 +139,7 @@ function initExportButtons() {
             alert('No Critical or High risk inspections found in the current records (all current records are Low or Medium risk). Use "Download CSV" under Track Inspections Audit to export all records.');
             return;
         }
-        exportInspectionsToCsv(highRisk, 'TrackDamageAnalyzer_critical_safety_briefing.csv');
+        exportInspectionsToCsv(highRisk, 'TrackVisionGuard_critical_safety_briefing.csv');
     });
 
     // 4. Export High-Risk Safety Summary (PDF from Backend Endpoint)
@@ -157,7 +157,7 @@ function initExportButtons() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'TrackDamageAnalyzer_HighRisk_Safety_Summary.pdf';
+            a.download = 'TrackVisionGuard_HighRisk_Safety_Summary.pdf';
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -311,7 +311,7 @@ async function downloadInspectionPdf(inspectionId, btnEl) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `TrackDamageAnalyzer_Inspection_${inspectionId}.pdf`;
+        a.download = `TrackVisionGuard_Inspection_${inspectionId}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);

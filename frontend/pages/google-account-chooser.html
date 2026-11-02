@@ -255,7 +255,7 @@
                 </svg>
             </div>
             <h1 class="google-title">Sign in with Google</h1>
-            <p class="google-subtitle">Choose an account to continue to <span class="app-badge">Track Damage Analyzer</span></p>
+            <p class="google-subtitle">Choose an account to continue to <span class="app-badge">TrackVision Guard</span></p>
         </div>
 
         <div class="status-message" id="statusMsg"></div>
@@ -304,11 +304,11 @@
                 <label for="customName">Full Name</label>
                 <input type="text" class="form-input" id="customName" placeholder="e.g. Alex Sharma" required>
             </div>
-            <button type="button" class="btn-submit-custom" onclick="submitCustomAccount()">Continue to Track Damage Analyzer</button>
+            <button type="button" class="btn-submit-custom" onclick="submitCustomAccount()">Continue to TrackVision Guard</button>
         </div>
 
         <p class="google-notice">
-            To continue, Google will share your name, email address, and language preference with Track Damage Analyzer. See Track Damage Analyzer's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+            To continue, Google will share your name, email address, and language preference with TrackVision Guard. See TrackVision Guard's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
         </p>
 
         <div class="google-footer">
@@ -425,7 +425,7 @@
                     role: data.role
                 }));
 
-                showLoading(`Authenticated as ${data.fullName}! Redirecting to Track Damage Analyzer...`);
+                showLoading(`Authenticated as ${data.fullName}! Redirecting to TrackVision Guard...`);
 
                 // If opened as a popup from login.html, notify the opener
                 if (window.opener && !window.opener.closed) {

@@ -1,5 +1,5 @@
 /**
- * TRACK DAMAGE ANALYZER – Defect Location GIS Map Controller
+ * TRACKVISION GUARD – Defect Location GIS Map Controller
  * All-India Railway Track Defect Detection & Safety Situation Visualizer
  *
  * Visualizes comprehensive Indian Railway network track inspection data across all 16 zones
@@ -86,7 +86,7 @@ function initLeafletMap() {
 
     // Standard high-visibility OpenStreetMap tile layer (clean light tiles)
     const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · Track Damage Analyzer GIS',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · TrackVision Guard GIS',
         maxZoom: 18
     });
     osmLayer.addTo(map);
@@ -217,6 +217,26 @@ function updateMetrics(geoList) {
     if (safeEl) safeEl.innerText = safe;
 }
 
+// Geographically accurate Indian state centers & bounding boxes for smooth GIS zooming
+const INDIAN_STATE_BOUNDS = {
+    'Uttar Pradesh': { center: [27.1303, 80.8597], zoom: 7, bounds: [[23.8, 77.0], [30.4, 84.6]] },
+    'Maharashtra': { center: [19.7515, 75.7139], zoom: 7, bounds: [[15.6, 72.6], [22.0, 80.9]] },
+    'West Bengal': { center: [23.5000, 87.8000], zoom: 7, bounds: [[21.5, 85.8], [27.2, 89.9]] },
+    'Bihar': { center: [25.6000, 85.5000], zoom: 7, bounds: [[24.2, 83.3], [27.5, 88.3]] },
+    'Madhya Pradesh': { center: [23.5000, 78.5000], zoom: 7, bounds: [[21.0, 74.0], [26.9, 82.8]] },
+    'Andhra Pradesh': { center: [15.9129, 79.7400], zoom: 7, bounds: [[12.6, 76.7], [19.1, 84.8]] },
+    'Telangana': { center: [17.8496, 79.1152], zoom: 7, bounds: [[15.8, 77.2], [19.9, 81.3]] },
+    'Tamil Nadu': { center: [11.1271, 78.6569], zoom: 7, bounds: [[8.0, 76.2], [13.6, 80.3]] },
+    'Gujarat': { center: [22.2587, 71.1924], zoom: 7, bounds: [[20.1, 68.1], [24.7, 74.5]] },
+    'Rajasthan': { center: [26.5000, 73.8000], zoom: 7, bounds: [[23.0, 69.5], [30.2, 78.2]] },
+    'Karnataka': { center: [14.5000, 75.8000], zoom: 7, bounds: [[11.5, 74.0], [18.5, 78.6]] },
+    'Odisha': { center: [20.5000, 84.4000], zoom: 7, bounds: [[17.8, 81.4], [22.6, 87.5]] },
+    'Assam': { center: [26.2006, 92.9376], zoom: 7, bounds: [[24.1, 89.7], [28.0, 96.0]] },
+    'Kerala': { center: [10.3000, 76.4000], zoom: 7, bounds: [[8.3, 74.8], [12.8, 77.4]] },
+    'Punjab': { center: [31.1471, 75.3412], zoom: 8, bounds: [[29.5, 73.8], [32.5, 76.9]] },
+    'Haryana': { center: [29.0588, 76.0856], zoom: 8, bounds: [[27.6, 74.4], [30.9, 77.6]] }
+};
+
 /**
  * Renders circle markers for geo-located inspections matching the active filters
  */
@@ -255,9 +275,16 @@ function renderMarkers() {
         return true;
     });
 
+    // Dynamically update the metric stats counters based on filtered view
+    updateMapMetrics(filtered);
+
+    const createdMarkers = [];
+
     filtered.forEach(insp => {
         const lat = parseFloat(insp.latitude);
         const lng = parseFloat(insp.longitude);
+        if (isNaN(lat) || isNaN(lng)) return;
+
         const risk = (insp.riskLevel || 'LOW').toUpperCase();
         const color = getRiskColor(risk);
 
@@ -271,7 +298,7 @@ function renderMarkers() {
         });
 
         const popupContent = `
-            <div style="font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.45; min-width: 240px; padding: 2px;">
+            <div style="font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.45; min-width: 250px; padding: 2px;">
                 <div style="font-weight: 800; color: #1e40af; margin-bottom: 4px; font-size: 0.95rem; font-family: 'Outfit', sans-serif;">
                     ${escapeHtml(insp.inspectionNumber)}
                     ${insp.isUserScan ? '<span class="badge bg-primary ms-1" style="font-size:0.65rem;">NEW SCAN</span>' : ''}
@@ -310,7 +337,24 @@ function renderMarkers() {
         });
 
         markersGroup.addLayer(marker);
+        createdMarkers.push(marker);
     });
+
+    // Auto-fit bounds or pan to selected state
+    if (stateVal !== 'ALL') {
+        if (createdMarkers.length > 0) {
+            try {
+                const group = L.featureGroup(createdMarkers);
+                map.fitBounds(group.getBounds().pad(0.2));
+            } catch (e) {
+                if (INDIAN_STATE_BOUNDS[stateVal]) {
+                    map.setView(INDIAN_STATE_BOUNDS[stateVal].center, INDIAN_STATE_BOUNDS[stateVal].zoom);
+                }
+            }
+        } else if (INDIAN_STATE_BOUNDS[stateVal]) {
+            map.setView(INDIAN_STATE_BOUNDS[stateVal].center, INDIAN_STATE_BOUNDS[stateVal].zoom);
+        }
+    }
 }
 
 /**
@@ -498,6 +542,7 @@ function initFilterControls() {
     const filterCat = document.getElementById('filter-category');
     const filterSearch = document.getElementById('filter-search');
     const btnRecenter = document.getElementById('btn-recenter-map');
+    const btnReset = document.getElementById('btn-reset-map');
     const btnClose = document.getElementById('btn-close-detail');
 
     [filterRisk, filterZone, filterState, filterCat].forEach(el => {
@@ -506,10 +551,26 @@ function initFilterControls() {
 
     filterSearch?.addEventListener('input', () => renderMarkers());
 
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            if (filterState) filterState.value = 'ALL';
+            if (filterCat) filterCat.value = 'ALL';
+            if (filterRisk) filterRisk.value = 'ALL';
+            if (filterZone) filterZone.value = 'ALL';
+            if (filterSearch) filterSearch.value = '';
+            renderMarkers();
+            if (map) {
+                map.setView([22.5937, 78.9629], 5);
+            }
+        });
+    }
+
     if (btnRecenter) {
         btnRecenter.addEventListener('click', () => {
+            if (filterState) filterState.value = 'ALL';
+            renderMarkers();
             if (map) {
-                map.setView([22.5, 79.5], 5);
+                map.setView([22.5937, 78.9629], 5);
             }
         });
     }

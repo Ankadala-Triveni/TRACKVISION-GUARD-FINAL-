@@ -1,5 +1,5 @@
 /**
- * TRACK DAMAGE ANALYZER – Login Page Controller
+ * TRACKVISION GUARD – Login Page Controller
  * Theme: Sky Blue + Slate Blue
  * Features:
  * - Proper RFC-Compliant Email & Username Validation (Supports .in, .com, .ac.uk, .ac.in, etc.)
@@ -254,9 +254,60 @@ function initLoginPage() {
     // ── 5. Real Website Google Sign-In Experience ──
     initGoogleAuth();
 
-    function initGoogleAuth() {
+    async function initGoogleAuth() {
+        let googleConfig = { googleClientId: '', googleAuthEnabled: false };
+        try {
+            const res = await fetch(`${API_URL}/auth/config`);
+            if (res.ok) {
+                googleConfig = await res.json();
+            }
+        } catch (e) {
+            // Local fallback
+        }
+
+        // If official Google Cloud OAuth Client ID is registered and GIS is available
+        if (googleConfig.googleAuthEnabled && googleConfig.googleClientId && window.google?.accounts?.id) {
+            try {
+                google.accounts.id.initialize({
+                    client_id: googleConfig.googleClientId,
+                    callback: async (response) => {
+                        clearAlerts();
+                        try {
+                            const res = await fetch(`${API_URL}/auth/google`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ idToken: response.credential })
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.message || 'Google token verification rejected by backend.');
+
+                            localStorage.setItem('token', data.token);
+                            localStorage.setItem('user', JSON.stringify({
+                                id: data.userId || data.id,
+                                username: data.username,
+                                fullName: data.fullName,
+                                email: data.email,
+                                role: data.role
+                            }));
+                            showSuccess(`Google Sign-In successful! Welcome, ${data.fullName || data.email}.`);
+                            setTimeout(() => window.location.href = 'dashboard.html', 400);
+                        } catch (err) {
+                            showError(err.message || 'Google authentication failed.');
+                        }
+                    }
+                });
+            } catch (e) {
+                console.warn('GIS initialize notice:', e);
+            }
+        }
+
         btnGoogle?.addEventListener('click', () => {
             clearAlerts();
+
+            if (googleConfig.googleAuthEnabled && googleConfig.googleClientId && window.google?.accounts?.id) {
+                google.accounts.id.prompt();
+                return;
+            }
 
             // Calculate centered popup coordinates for Google Sign-In window
             const w = 480;

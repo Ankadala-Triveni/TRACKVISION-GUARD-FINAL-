@@ -627,7 +627,7 @@ function renderTrackMap(inspections) {
         }).setView([22.5, 79.5], 5);
 
         const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap Â· Track Damage Analyzer GIS',
+            attribution: '&copy; OpenStreetMap Â· TrackVision Guard GIS',
             maxZoom: 18
         });
         osmLayer.addTo(leafletMap);

@@ -59,7 +59,7 @@ window.resetCropCanvas = function() {
 };
 
 function initInspectionPage() {
-    console.log('[TrackDamageAnalyzer] Starting initInspectionPage');
+    console.log('[TrackVisionGuard] Starting initInspectionPage');
     try { initUploadAndInspection(); } catch (e) { console.error('initUploadAndInspection error:', e); }
     try { initCanvasControls(); } catch (e) { console.error('initCanvasControls error:', e); }
     try { initMaintenanceModal(); } catch (e) { console.error('initMaintenanceModal error:', e); }
@@ -1525,7 +1525,7 @@ async function downloadInspectionPdf(inspectionId) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `TrackDamageAnalyzer_Inspection_${inspectionId}.pdf`;
+        a.download = `TrackVisionGuard_Inspection_${inspectionId}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
