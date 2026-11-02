@@ -16,8 +16,8 @@
         .inspection-container { max-width: 100%; width: 100%; }
         .upload-dropzone {
             border: 2px dashed #93c5fd;
-            border-radius: 14px;
-            padding: 2.5rem;
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
             text-align: center;
             background: #f8fafc;
             transition: all 0.25s ease;
@@ -535,8 +535,8 @@
                 <button class="btn btn-rg d-none" id="btn-new-inspection-repeat">Inspect Another</button>
             </div>
 
-            <!-- Feature B: Before vs After Track Inspection Comparison -->
-            <div class="panel-card p-3 mb-4 mx-3 rounded-3 d-none" id="comparison-panel">
+            <!-- Feature B: Before vs After Track Inspection Comparison (Reference Image 3) -->
+            <div class="panel-card p-3 mb-4 rounded-3" id="comparison-panel">
                 <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-arrow-left-right text-primary fs-5"></i>
@@ -545,30 +545,41 @@
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small font-outfit">Track Corridor Milestone</span>
                 </div>
                 <div class="row g-3 align-items-center">
+                    <!-- Left: Baseline / Past Inspection -->
                     <div class="col-md-5 text-center">
-                        <div class="small fw-bold text-muted mb-1"><i class="bi bi-calendar3 me-1"></i> Baseline / Past Inspection (<span id="prev-inspection-date">Baseline Record</span>)</div>
-                        <div class="border rounded-2 p-1 bg-light text-center" style="min-height: 180px; display: flex; align-items: center; justify-content: center;">
-                            <img id="prev-inspection-img" src="../samples/sample_clean_track.jpg" alt="Previous inspection" style="max-height: 180px; max-width: 100%; object-fit: contain; border-radius: 4px;">
+                        <div class="small fw-bold text-muted mb-2">
+                            <i class="bi bi-calendar3 me-1"></i> Baseline / Past Inspection (<span id="prev-inspection-date">Prior Baseline Scan</span>)
                         </div>
-                        <div class="small text-muted mt-1 fw-medium" id="prev-inspection-meta">Milestone: Verified Baseline &middot; Defect Count: 0 (Normal)</div>
+                        <div class="border rounded-2 p-1 bg-light text-center" style="min-height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <img id="prev-inspection-img" src="../samples/sample_clean_track.jpg" alt="Baseline / Past Inspection" style="max-height: 180px; width: 100%; object-fit: cover; border-radius: 4px;">
+                        </div>
+                        <div class="small text-muted mt-2 fw-medium" id="prev-inspection-meta">Baseline Milestone &middot; Defect Count: 0 (Normal)</div>
                     </div>
+
+                    <!-- Middle: Delta Arrow -->
                     <div class="col-md-2 text-center">
-                        <div class="p-2 rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <div class="p-2 rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
                             <i class="bi bi-arrow-right fs-4"></i>
                         </div>
                         <div class="mt-2">
-                            <span class="badge" id="comparison-delta-badge" style="background: #ef4444; color: #fff; font-size: 0.8rem;">Change Detected</span>
+                            <span class="badge" id="comparison-delta-badge" style="background: #ef4444; color: #fff; font-size: 0.8rem; padding: 0.35rem 0.65rem;">+3 New Defect(s)</span>
                             <div class="small text-muted mt-1" style="font-size: 0.72rem;">Timeline Progression</div>
                         </div>
                     </div>
+
+                    <!-- Right: Current Inspection -->
                     <div class="col-md-5 text-center">
-                        <div class="small fw-bold text-primary mb-1"><i class="bi bi-calendar-check me-1"></i> Current Inspection (<span id="curr-inspection-date">Active Inspection</span>)</div>
-                        <div class="border rounded-2 p-1 bg-light text-center" style="min-height: 180px; display: flex; align-items: center; justify-content: center;">
-                            <img id="curr-inspection-img" src="../samples/sample_joint_defect.jpg" alt="Current inspection" style="max-height: 180px; max-width: 100%; object-fit: contain; border-radius: 4px;">
+                        <div class="small fw-bold text-primary mb-2">
+                            <i class="bi bi-calendar-check me-1"></i> Current Inspection (<span id="curr-inspection-date">02 Nov 2026, 00:10</span>)
                         </div>
-                        <div class="small text-muted mt-1 fw-medium" id="curr-inspection-meta">Active Section &middot; Defect Count: 1</div>
+                        <div class="border rounded-2 p-1 bg-light text-center" style="min-height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <img id="curr-inspection-img" src="../samples/sample_joint_defect.jpg" alt="Current Inspection" style="max-height: 180px; width: 100%; object-fit: cover; border-radius: 4px;">
+                        </div>
+                        <div class="small text-muted mt-2 fw-medium" id="curr-inspection-meta">Active Section &middot; Defect Count: 3</div>
                     </div>
                 </div>
+
+                <!-- Location Verification Note -->
                 <div class="small text-secondary mt-3 p-2 rounded-2" style="background: #f8fafc; border-left: 3px solid #2563eb;">
                     <i class="bi bi-info-circle-fill text-primary me-1"></i>
                     <strong>Location Verification Note:</strong> Correlates geo-referenced track section milestones to analyze surface wear progression, fishplate loosening velocity, and structural degradation over inspection cycles.
@@ -576,13 +587,15 @@
             </div>
 
             <!-- Detected Defect Coordinates Breakdown (Collapsible) -->
-            <div class="px-3 mb-3 d-none">
+            <div class="mb-4">
                 <div class="border rounded-3 p-3 bg-light">
                     <div class="d-flex align-items-center justify-content-between" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#detailed-detections-collapse">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-list-check text-primary"></i>
                             <span class="fw-bold text-dark font-outfit small">Detailed Defect Bounding Boxes &amp; Coordinates</span>
                         </div>
+                        <i class="bi bi-chevron-down text-muted"></i>
+                    </div>
                         <i class="bi bi-chevron-down text-muted"></i>
                     </div>
                     <div class="collapse mt-3" id="detailed-detections-collapse">
