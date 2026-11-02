@@ -2,8 +2,10 @@
  * TRACKVISION GUARD – Defect Location GIS Map Controller
  * All-India Railway Track Defect Detection & Safety Situation Visualizer
  *
- * Visualizes comprehensive Indian Railway network track inspection data across all 16 zones
+ * Visualizes comprehensive Indian Railway network track inspection data across all zones
  * and major Indian states based on railway safety audits, alongside live user inspections.
+ * Provides authentic boundary highlighting, interactive clickable markers, dynamic analytics,
+ * and comprehensive engineering report generation.
  */
 
 const API_URL = 'http://localhost:8080/api';
@@ -12,7 +14,9 @@ const token = localStorage.getItem('token');
 let map = null;
 let markersGroup = null;
 let trackCorridorGroup = null;
+let stateBoundaryLayer = null;
 let allGeoInspections = [];
+let currentlySelectedInspection = null;
 
 let chartStateDefects = null;
 let chartDefectShares = null;
@@ -46,16 +50,17 @@ function resolveIndianRailwayGps(insp, index) {
     }
 
     const corridorAnchors = [
-        { state: 'Uttar Pradesh', zone: 'Northern Railway', lat: 26.8467, lng: 80.9462 },
-        { state: 'Maharashtra', zone: 'Central Railway', lat: 18.9400, lng: 72.8350 },
-        { state: 'West Bengal', zone: 'Eastern Railway', lat: 22.5726, lng: 88.3639 },
-        { state: 'Tamil Nadu', zone: 'Southern Railway', lat: 13.0827, lng: 80.2707 },
-        { state: 'Telangana', zone: 'South Central Railway', lat: 17.4399, lng: 78.4983 },
-        { state: 'Gujarat', zone: 'Western Railway', lat: 22.3072, lng: 73.1812 },
-        { state: 'Bihar', zone: 'East Central Railway', lat: 25.5941, lng: 85.1376 },
-        { state: 'Madhya Pradesh', zone: 'West Central Railway', lat: 23.2599, lng: 77.4126 },
-        { state: 'Rajasthan', zone: 'North Western Railway', lat: 26.9124, lng: 75.7873 },
-        { state: 'Odisha', zone: 'East Coast Railway', lat: 20.2961, lng: 85.8245 }
+        { state: 'Uttar Pradesh', zone: 'Northern Railway', division: 'Lucknow', lat: 26.8467, lng: 80.9462 },
+        { state: 'Maharashtra', zone: 'Central Railway', division: 'Mumbai', lat: 18.9400, lng: 72.8350 },
+        { state: 'West Bengal', zone: 'Eastern Railway', division: 'Howrah', lat: 22.5726, lng: 88.3639 },
+        { state: 'Tamil Nadu', zone: 'Southern Railway', division: 'Chennai', lat: 13.0827, lng: 80.2707 },
+        { state: 'Telangana', zone: 'South Central Railway', division: 'Secunderabad', lat: 17.4399, lng: 78.4983 },
+        { state: 'Gujarat', zone: 'Western Railway', division: 'Vadodara', lat: 22.3072, lng: 73.1812 },
+        { state: 'Bihar', zone: 'East Central Railway', division: 'Danapur', lat: 25.5941, lng: 85.1376 },
+        { state: 'Madhya Pradesh', zone: 'West Central Railway', division: 'Bhopal', lat: 23.2599, lng: 77.4126 },
+        { state: 'Rajasthan', zone: 'North Western Railway', division: 'Jaipur', lat: 26.9124, lng: 75.7873 },
+        { state: 'Karnataka', zone: 'South Western Railway', division: 'Bengaluru', lat: 12.9716, lng: 77.5946 },
+        { state: 'Odisha', zone: 'East Coast Railway', division: 'Khurda Road', lat: 20.2961, lng: 85.8245 }
     ];
 
     const idx = (insp.id || index || 1);
@@ -67,7 +72,8 @@ function resolveIndianRailwayGps(insp, index) {
         lng: Number((anchor.lng + offset).toFixed(4)),
         isAuto: true,
         resolvedState: anchor.state,
-        corridorZone: anchor.zone
+        corridorZone: anchor.zone,
+        division: anchor.division
     };
 }
 
@@ -84,7 +90,7 @@ function initLeafletMap() {
         attributionControl: true
     }).setView([22.5, 79.5], 5);
 
-    // Standard high-visibility OpenStreetMap tile layer (clean light tiles)
+    // High-visibility OpenStreetMap tile layer
     const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · TrackVision Guard GIS',
         maxZoom: 18
@@ -127,14 +133,14 @@ function drawIndianRailwayCorridors() {
         L.polyline(pts, {
             color: '#2563eb',
             weight: 3.5,
-            opacity: 0.7,
+            opacity: 0.75,
             dashArray: '8, 6'
         }).addTo(trackCorridorGroup);
     });
 }
 
 /**
- * Fetches user inspections and combines with the All-India dataset
+ * Fetches user inspections from backend and combines with the All-India dataset
  */
 async function loadMapData() {
     allGeoInspections = [...getAllIndiaSafetyRecords()];
@@ -154,9 +160,10 @@ async function loadMapData() {
 
                 allGeoInspections.unshift({
                     id: `DB-${insp.id}`,
-                    inspectionNumber: insp.inspectionNumber,
+                    inspectionNumber: insp.inspectionNumber || `INS-2026-${insp.id}`,
                     railwayZone: insp.railwayZone || gps.corridorZone || 'Northern Railway',
-                    state: gps.resolvedState || 'Uttar Pradesh',
+                    state: insp.state || gps.resolvedState || 'Uttar Pradesh',
+                    division: gps.division || 'Main Division',
                     trackSection: insp.trackSection || `Track Section ID #${insp.id}`,
                     location: insp.location || 'Inspected Railway Track Section',
                     latitude: gps.lat,
@@ -167,18 +174,18 @@ async function loadMapData() {
                     riskScore: insp.riskScore !== null ? Number(insp.riskScore) : 10.0,
                     recommendedAction: getActionForRisk((insp.riskLevel || 'LOW').toUpperCase(), primary),
                     date: (insp.createdAt || '').split('T')[0] || '2026-11-02',
+                    inspector: 'TrackVision AI YOLO11 / Field Engineer (Live Scan)',
+                    maintenanceStatus: 'Scheduled',
+                    source: 'Field Image Inspection / Live Model Inference',
                     isUserScan: true
                 });
             });
         }
     } catch (err) {
-        console.warn('Backend inspections note (offline or empty):', err.message);
+        console.warn('Backend inspections notice (offline or empty):', err.message);
     }
 
-    updateMetrics(allGeoInspections);
     renderMarkers();
-    renderStateWiseChart(allGeoInspections);
-    renderDefectSharesChart(allGeoInspections);
 
     if (map) {
         map.invalidateSize();
@@ -188,19 +195,19 @@ async function loadMapData() {
 
 function getActionForRisk(risk, defect) {
     if (risk === 'CRITICAL' || defect.toLowerCase().includes('broken')) {
-        return 'Immediate Traffic Suspension, Emergency Clamping & Rail Replacement';
+        return 'Immediate Traffic Suspension, Emergency Clamping & Rail Replacement within 24 Hours';
     } else if (risk === 'HIGH') {
-        return 'Priority 20 km/h Speed Restriction & Urgent Engineering Remediation';
+        return 'Priority 20 km/h Speed Restriction & Urgent Engineering Remediation within 48 Hours';
     } else if (risk === 'MEDIUM') {
-        return 'Schedule Rail Grinding & Ultrasonic Testing within 14 Days';
+        return 'Schedule Rail Grinding & Ultrasonic Testing (USFD) within 14 Days';
     }
-    return 'Routine Safety Patrol & Normal Track Monitoring';
+    return 'Routine Safety Patrol & Normal Continuous Track Monitoring';
 }
 
 /**
- * Updates top metrics based on geo-located inspections
+ * Updates top metrics based on currently filtered geo-located inspections
  */
-function updateMetrics(geoList) {
+function updateMapMetrics(geoList) {
     const totalEl = document.getElementById('map-stat-total');
     const critEl = document.getElementById('map-stat-critical');
     const highEl = document.getElementById('map-stat-high');
@@ -209,7 +216,7 @@ function updateMetrics(geoList) {
     const total = geoList.length;
     const critical = geoList.filter(i => (i.riskLevel || '').toUpperCase() === 'CRITICAL').length;
     const high = geoList.filter(i => (i.riskLevel || '').toUpperCase() === 'HIGH' || (i.riskLevel || '').toUpperCase() === 'MEDIUM').length;
-    const safe = geoList.filter(i => (i.riskLevel || '').toUpperCase() === 'LOW').length;
+    const safe = geoList.filter(i => (i.riskLevel || '').toUpperCase() === 'LOW' || (i.riskLevel || '').toUpperCase() === 'SAFE').length;
 
     if (totalEl) totalEl.innerText = total;
     if (critEl) critEl.innerText = critical;
@@ -217,25 +224,47 @@ function updateMetrics(geoList) {
     if (safeEl) safeEl.innerText = safe;
 }
 
-// Geographically accurate Indian state centers & bounding boxes for smooth GIS zooming
-const INDIAN_STATE_BOUNDS = {
-    'Uttar Pradesh': { center: [27.1303, 80.8597], zoom: 7, bounds: [[23.8, 77.0], [30.4, 84.6]] },
-    'Maharashtra': { center: [19.7515, 75.7139], zoom: 7, bounds: [[15.6, 72.6], [22.0, 80.9]] },
-    'West Bengal': { center: [23.5000, 87.8000], zoom: 7, bounds: [[21.5, 85.8], [27.2, 89.9]] },
-    'Bihar': { center: [25.6000, 85.5000], zoom: 7, bounds: [[24.2, 83.3], [27.5, 88.3]] },
-    'Madhya Pradesh': { center: [23.5000, 78.5000], zoom: 7, bounds: [[21.0, 74.0], [26.9, 82.8]] },
-    'Andhra Pradesh': { center: [15.9129, 79.7400], zoom: 7, bounds: [[12.6, 76.7], [19.1, 84.8]] },
-    'Telangana': { center: [17.8496, 79.1152], zoom: 7, bounds: [[15.8, 77.2], [19.9, 81.3]] },
-    'Tamil Nadu': { center: [11.1271, 78.6569], zoom: 7, bounds: [[8.0, 76.2], [13.6, 80.3]] },
-    'Gujarat': { center: [22.2587, 71.1924], zoom: 7, bounds: [[20.1, 68.1], [24.7, 74.5]] },
-    'Rajasthan': { center: [26.5000, 73.8000], zoom: 7, bounds: [[23.0, 69.5], [30.2, 78.2]] },
-    'Karnataka': { center: [14.5000, 75.8000], zoom: 7, bounds: [[11.5, 74.0], [18.5, 78.6]] },
-    'Odisha': { center: [20.5000, 84.4000], zoom: 7, bounds: [[17.8, 81.4], [22.6, 87.5]] },
-    'Assam': { center: [26.2006, 92.9376], zoom: 7, bounds: [[24.1, 89.7], [28.0, 96.0]] },
-    'Kerala': { center: [10.3000, 76.4000], zoom: 7, bounds: [[8.3, 74.8], [12.8, 77.4]] },
-    'Punjab': { center: [31.1471, 75.3412], zoom: 8, bounds: [[29.5, 73.8], [32.5, 76.9]] },
-    'Haryana': { center: [29.0588, 76.0856], zoom: 8, bounds: [[27.6, 74.4], [30.9, 77.6]] }
-};
+/**
+ * Highlights the geographical boundary of the selected Indian State using GeoJSON
+ */
+function renderStateBoundary(stateVal) {
+    if (!map) return;
+
+    if (stateBoundaryLayer) {
+        map.removeLayer(stateBoundaryLayer);
+        stateBoundaryLayer = null;
+    }
+
+    if (stateVal === 'ALL') return;
+
+    const geoData = (typeof window !== 'undefined' && window.INDIA_STATES_GEOJSON) ? window.INDIA_STATES_GEOJSON : null;
+    if (!geoData || !geoData.features) return;
+
+    const feature = geoData.features.find(f => {
+        const name = (f.properties?.name || '').toLowerCase();
+        const search = stateVal.toLowerCase();
+        return name === search || name.includes(search) || search.includes(name);
+    });
+
+    if (feature) {
+        stateBoundaryLayer = L.geoJSON(feature, {
+            style: {
+                color: '#1d4ed8',         // Deep Royal Navy / Blue border
+                weight: 3.2,
+                opacity: 0.95,
+                fillColor: '#3b82f6',     // Translucent Sky Blue
+                fillOpacity: 0.14,
+                dashArray: '6, 4'
+            }
+        }).addTo(map);
+
+        try {
+            map.fitBounds(stateBoundaryLayer.getBounds().pad(0.08));
+        } catch (e) {
+            console.warn('Could not fit state boundary layer bounds:', e);
+        }
+    }
+}
 
 /**
  * Renders circle markers for geo-located inspections matching the active filters
@@ -251,14 +280,22 @@ function renderMarkers() {
     const catVal = document.getElementById('filter-category')?.value || 'ALL';
     const searchVal = (document.getElementById('filter-search')?.value || '').trim().toLowerCase();
 
+    // 1. Highlight Geographical Boundary for the selected state
+    renderStateBoundary(stateVal);
+
+    // 2. Filter inspections strictly by criteria
     const filtered = allGeoInspections.filter(insp => {
-        if (riskVal !== 'ALL' && (insp.riskLevel || '').toUpperCase() !== riskVal.toUpperCase()) {
-            return false;
+        if (riskVal !== 'ALL') {
+            const r = (insp.riskLevel || '').toUpperCase();
+            if (riskVal === 'CRITICAL' && r !== 'CRITICAL') return false;
+            if (riskVal === 'HIGH' && r !== 'HIGH') return false;
+            if (riskVal === 'MEDIUM' && r !== 'MEDIUM') return false;
+            if (riskVal === 'LOW' && r !== 'LOW' && r !== 'SAFE') return false;
         }
         if (zoneVal !== 'ALL' && (insp.railwayZone || '') !== zoneVal) {
             return false;
         }
-        if (stateVal !== 'ALL' && (insp.state || '') !== stateVal) {
+        if (stateVal !== 'ALL' && (insp.state || '').toLowerCase() !== stateVal.toLowerCase()) {
             return false;
         }
         if (catVal !== 'ALL') {
@@ -275,8 +312,12 @@ function renderMarkers() {
         return true;
     });
 
-    // Dynamically update the metric stats counters based on filtered view
+    // 3. Dynamically update metric counter cards based on filtered view
     updateMapMetrics(filtered);
+
+    // 4. Update both charts below dynamically for state or national view
+    renderStateWiseChart(filtered, stateVal);
+    renderDefectSharesChart(filtered, stateVal);
 
     const createdMarkers = [];
 
@@ -289,12 +330,12 @@ function renderMarkers() {
         const color = getRiskColor(risk);
 
         const marker = L.circleMarker([lat, lng], {
-            radius: risk === 'CRITICAL' ? 12 : (risk === 'HIGH' ? 10 : 8),
+            radius: risk === 'CRITICAL' ? 11 : (risk === 'HIGH' ? 9 : 7.5),
             fillColor: color,
             color: '#ffffff',
             weight: 2.5,
             opacity: 1.0,
-            fillOpacity: 0.9
+            fillOpacity: 0.92
         });
 
         const popupContent = `
@@ -340,19 +381,20 @@ function renderMarkers() {
         createdMarkers.push(marker);
     });
 
-    // Auto-fit bounds or pan to selected state
+    // 5. Camera positioning: if state boundary layer exists, bounds are already set; otherwise zoom to markers
     if (stateVal !== 'ALL') {
-        if (createdMarkers.length > 0) {
+        if (!stateBoundaryLayer && createdMarkers.length > 0) {
             try {
                 const group = L.featureGroup(createdMarkers);
-                map.fitBounds(group.getBounds().pad(0.2));
+                map.fitBounds(group.getBounds().pad(0.15));
             } catch (e) {
-                if (INDIAN_STATE_BOUNDS[stateVal]) {
-                    map.setView(INDIAN_STATE_BOUNDS[stateVal].center, INDIAN_STATE_BOUNDS[stateVal].zoom);
-                }
+                console.warn('Could not fit marker group bounds:', e);
             }
-        } else if (INDIAN_STATE_BOUNDS[stateVal]) {
-            map.setView(INDIAN_STATE_BOUNDS[stateVal].center, INDIAN_STATE_BOUNDS[stateVal].zoom);
+        }
+    } else {
+        // Return to India national view
+        if (map && !stateBoundaryLayer) {
+            map.setView([22.5, 79.5], 5);
         }
     }
 }
@@ -365,19 +407,22 @@ function getRiskColor(risk) {
         case 'CRITICAL': return '#ef4444'; // Red
         case 'HIGH':     return '#f97316'; // Orange
         case 'MEDIUM':   return '#eab308'; // Amber / Yellow
-        case 'LOW':      return '#10b981'; // Green (Safe)
+        case 'LOW':      return '#10b981'; // Green
+        case 'SAFE':     return '#059669'; // Emerald Safe
         default:         return '#3b82f6';
     }
 }
 
 /**
- * Populates and reveals the selected track detail panel
+ * Populates and reveals the selected track detail panel below the map
  */
 function showLocationDetail(insp) {
+    currentlySelectedInspection = insp;
+
     const panel = document.getElementById('location-detail-panel');
     if (!panel) return;
 
-    document.getElementById('sel-insp-number').innerText = insp.inspectionNumber || '-';
+    document.getElementById('sel-insp-number').innerText = insp.inspectionNumber || insp.id || '-';
     document.getElementById('sel-zone-sec').innerText = `${insp.state || ''} · ${insp.railwayZone || '-'} / ${insp.trackSection || '-'}`;
     document.getElementById('sel-loc-desc').innerText = insp.location || insp.recommendedAction || '-';
     document.getElementById('sel-gps-coords').innerText = `${Number(insp.latitude).toFixed(4)}° N, ${Number(insp.longitude).toFixed(4)}° E`;
@@ -399,84 +444,227 @@ window.showLocationDetailById = function(id) {
 };
 
 /**
- * Requirement: State-Wise Track Defect Distribution Chart (Photo 1 Reference)
+ * Opens comprehensive Location-Specific Full Inspection Report Modal
  */
-function renderStateWiseChart(inspections) {
+function openFullReportModal(insp) {
+    if (!insp) return;
+
+    const modalEl = document.getElementById('fullReportModal');
+    if (!modalEl) return;
+
+    const risk = (insp.riskLevel || 'LOW').toUpperCase();
+    const color = getRiskColor(risk);
+
+    document.getElementById('modal-rep-number').innerText = insp.inspectionNumber || insp.id;
+    document.getElementById('modal-rep-source').innerText = insp.source || 'Official CRS Safety Audit';
+    
+    const riskBadge = document.getElementById('modal-rep-risk-badge');
+    riskBadge.innerText = risk;
+    riskBadge.className = `risk-badge risk-${risk}`;
+    
+    document.getElementById('modal-rep-score').innerText = (insp.riskScore !== undefined ? Number(insp.riskScore).toFixed(1) : '0.0');
+    document.getElementById('modal-rep-state').innerText = insp.state || '-';
+    document.getElementById('modal-rep-zone').innerText = insp.railwayZone || '-';
+    document.getElementById('modal-rep-div').innerText = insp.division || 'Main Division';
+    document.getElementById('modal-rep-section').innerText = insp.trackSection || '-';
+    document.getElementById('modal-rep-location').innerText = insp.location || 'Standard Railway Operating Section';
+    document.getElementById('modal-rep-gps').innerText = `${Number(insp.latitude).toFixed(4)}° N, ${Number(insp.longitude).toFixed(4)}° E`;
+
+    const defectEl = document.getElementById('modal-rep-defect');
+    defectEl.innerText = insp.primaryDefect || 'Healthy Track';
+    defectEl.style.color = color;
+
+    document.getElementById('modal-rep-cat').innerText = insp.defectCategory || 'General Track';
+    document.getElementById('modal-rep-date').innerText = insp.date || '2026-11-02';
+    document.getElementById('modal-rep-inspector').innerText = insp.inspector || 'TrackVision AI YOLO11 / Field Engineer R. Sharma (CRS Audit Team)';
+    
+    const urgencyEl = document.getElementById('modal-rep-urgency');
+    const actionBox = document.getElementById('modal-rep-action-box');
+    if (risk === 'CRITICAL') {
+        urgencyEl.innerText = 'EMERGENCY DIRECTIVE: Immediate Track Suspension & Rail Replacement (0-24 Hours)';
+        urgencyEl.className = 'small fw-bold text-danger mb-1';
+        actionBox.style.background = '#fef2f2';
+        actionBox.style.borderLeftColor = '#ef4444';
+    } else if (risk === 'HIGH') {
+        urgencyEl.innerText = 'PRIORITY DIRECTIVE: Speed Restriction 20-30 km/h & Urgent Remediation (24-48 Hours)';
+        urgencyEl.className = 'small fw-bold text-warning mb-1';
+        actionBox.style.background = '#fffbeb';
+        actionBox.style.borderLeftColor = '#f59e0b';
+    } else {
+        urgencyEl.innerText = 'ROUTINE PROTOCOL: Scheduled Preventive Maintenance & Monitoring';
+        urgencyEl.className = 'small fw-bold text-success mb-1';
+        actionBox.style.background = '#f0fdf4';
+        actionBox.style.borderLeftColor = '#10b981';
+    }
+
+    document.getElementById('modal-rep-action').innerText = insp.recommendedAction || 'Continue routine safety patrols.';
+    document.getElementById('modal-rep-maint').innerText = insp.maintenanceStatus || 'Scheduled';
+
+    // Configure single location CSV export
+    const csvBtn = document.getElementById('btn-modal-export-csv');
+    if (csvBtn) {
+        csvBtn.onclick = () => {
+            const csvRows = [
+                ['Inspection Number', 'State', 'Railway Zone', 'Track Section', 'Location', 'Latitude', 'Longitude', 'Primary Defect', 'Defect Category', 'Risk Level', 'Risk Score', 'Recommended Action', 'Date', 'Source'],
+                [
+                    `"${insp.inspectionNumber || insp.id}"`,
+                    `"${insp.state || ''}"`,
+                    `"${insp.railwayZone || ''}"`,
+                    `"${insp.trackSection || ''}"`,
+                    `"${insp.location || ''}"`,
+                    insp.latitude,
+                    insp.longitude,
+                    `"${insp.primaryDefect || ''}"`,
+                    `"${insp.defectCategory || ''}"`,
+                    `"${risk}"`,
+                    insp.riskScore,
+                    `"${insp.recommendedAction || ''}"`,
+                    `"${insp.date || ''}"`,
+                    `"${insp.source || ''}"`
+                ]
+            ];
+            const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.map(e => e.join(',')).join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `${insp.inspectionNumber || 'TrackVision_Report'}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+    }
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+/**
+ * Requirement: State-Wise Track Defect Distribution Chart (Photo 1 Reference)
+ * Dynamically switches between All-India state comparison and selected state section breakdown.
+ */
+function renderStateWiseChart(inspections, activeState) {
     const ctx = document.getElementById('chart-state-defects')?.getContext('2d');
     if (!ctx || typeof Chart === 'undefined') return;
 
     if (chartStateDefects) chartStateDefects.destroy();
 
-    // Group counts by state
-    const states = [
-        'Uttar Pradesh', 'Maharashtra', 'West Bengal', 'Bihar',
-        'Madhya Pradesh', 'Andhra Pradesh', 'Tamil Nadu', 'Gujarat',
-        'Rajasthan', 'Karnataka', 'Odisha', 'Assam', 'Kerala', 'Punjab'
-    ];
+    if (!activeState || activeState === 'ALL') {
+        // All-India National Bar Chart Comparison across 14 major states
+        const states = [
+            'Uttar Pradesh', 'Maharashtra', 'West Bengal', 'Bihar',
+            'Madhya Pradesh', 'Andhra Pradesh', 'Tamil Nadu', 'Gujarat',
+            'Rajasthan', 'Karnataka', 'Odisha', 'Assam', 'Kerala', 'Punjab'
+        ];
 
-    const criticalCounts = states.map(st => inspections.filter(i => i.state === st && (i.riskLevel || '').toUpperCase() === 'CRITICAL').length);
-    const highMedCounts = states.map(st => inspections.filter(i => i.state === st && ((i.riskLevel || '').toUpperCase() === 'HIGH' || (i.riskLevel || '').toUpperCase() === 'MEDIUM')).length);
-    const safeCounts = states.map(st => inspections.filter(i => i.state === st && (i.riskLevel || '').toUpperCase() === 'LOW').length);
+        const criticalCounts = states.map(st => allGeoInspections.filter(i => i.state === st && (i.riskLevel || '').toUpperCase() === 'CRITICAL').length);
+        const highMedCounts = states.map(st => allGeoInspections.filter(i => i.state === st && ((i.riskLevel || '').toUpperCase() === 'HIGH' || (i.riskLevel || '').toUpperCase() === 'MEDIUM')).length);
+        const safeCounts = states.map(st => allGeoInspections.filter(i => i.state === st && ((i.riskLevel || '').toUpperCase() === 'LOW' || (i.riskLevel || '').toUpperCase() === 'SAFE')).length);
 
-    chartStateDefects = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['UP', 'Maharashtra', 'WB', 'Bihar', 'MP', 'AP & TS', 'Tamil Nadu', 'Gujarat', 'Rajasthan', 'Karnataka', 'Odisha', 'Assam', 'Kerala', 'Punjab & HR'],
-            datasets: [
-                {
-                    label: 'Critical / Fracture (Immediate Action)',
-                    data: criticalCounts,
-                    backgroundColor: '#ef4444',
-                    borderRadius: 4
+        chartStateDefects = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['UP', 'Maharashtra', 'WB', 'Bihar', 'MP', 'AP & TS', 'Tamil Nadu', 'Gujarat', 'Rajasthan', 'Karnataka', 'Odisha', 'Assam', 'Kerala', 'Punjab & HR'],
+                datasets: [
+                    {
+                        label: 'Critical / Fracture (Immediate Action)',
+                        data: criticalCounts,
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'High & Medium (Urgent / Priority)',
+                        data: highMedCounts,
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Safe / Low Risk (Clear Track)',
+                        data: safeCounts,
+                        backgroundColor: '#10b981',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { color: '#334155', font: { family: 'Outfit', size: 11, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => states[items[0].dataIndex] || items[0].label
+                        }
+                    }
                 },
-                {
-                    label: 'High & Medium (Urgent / Priority)',
-                    data: highMedCounts,
-                    backgroundColor: '#f59e0b',
-                    borderRadius: 4
-                },
-                {
-                    label: 'Safe / Low Risk (Clear Track)',
-                    data: safeCounts,
-                    backgroundColor: '#10b981',
-                    borderRadius: 4
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: { color: '#334155', font: { family: 'Outfit', size: 11, weight: 'bold' } }
-                },
-                tooltip: {
-                    callbacks: {
-                        title: (items) => states[items[0].dataIndex] || items[0].label
+                scales: {
+                    x: {
+                        stacked: false,
+                        ticks: { color: '#475569', font: { family: 'Inter', size: 10, weight: '600' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#64748b', stepSize: 1 },
+                        grid: { color: '#e2e8f0' }
                     }
                 }
+            }
+        });
+    } else {
+        // Selected State Specific Section Breakdown Chart
+        const statePoints = inspections.slice(0, 10);
+        const labels = statePoints.map(p => {
+            const parts = (p.trackSection || '').split('-');
+            return parts.length > 1 ? parts.slice(0, 2).join('-').trim() : (p.inspectionNumber || 'Section');
+        });
+
+        const riskScores = statePoints.map(p => Number(p.riskScore || 0));
+        const colors = statePoints.map(p => getRiskColor((p.riskLevel || 'LOW').toUpperCase()));
+
+        chartStateDefects = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `${activeState} – Track Risk Index (0-100)`,
+                    data: riskScores,
+                    backgroundColor: colors,
+                    borderRadius: 4
+                }]
             },
-            scales: {
-                x: {
-                    stacked: false,
-                    ticks: { color: '#475569', font: { family: 'Inter', size: 10, weight: '600' } },
-                    grid: { display: false }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { color: '#334155', font: { family: 'Outfit', size: 11, weight: 'bold' } }
+                    }
                 },
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: '#64748b', stepSize: 1 },
-                    grid: { color: '#e2e8f0' }
+                scales: {
+                    x: {
+                        ticks: { color: '#475569', font: { family: 'Inter', size: 9, weight: '600' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { color: '#64748b', stepSize: 20 },
+                        grid: { color: '#e2e8f0' }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 }
 
 /**
  * Requirement: Defect Class Shares Donut Chart (Photo 1 Reference)
  */
-function renderDefectSharesChart(inspections) {
+function renderDefectSharesChart(inspections, activeState) {
     const ctx = document.getElementById('chart-defect-shares')?.getContext('2d');
     const badge = document.getElementById('chart-total-defects-badge');
     if (!ctx || typeof Chart === 'undefined') return;
@@ -503,7 +691,7 @@ function renderDefectSharesChart(inspections) {
     });
 
     const total = Object.values(catCounts).reduce((a, b) => a + b, 0);
-    if (badge) badge.innerText = `${total} Sections Mapped`;
+    if (badge) badge.innerText = `${total} Sections (${!activeState || activeState === 'ALL' ? 'All-India' : activeState})`;
 
     chartDefectShares = new Chart(ctx, {
         type: 'doughnut',
@@ -524,7 +712,7 @@ function renderDefectSharesChart(inspections) {
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: { color: '#334155', boxWidth: 12, font: { family: 'Inter', size: 11 } }
+                    labels: { color: '#334155', boxWidth: 12, font: { family: 'Inter', size: 10 } }
                 }
             },
             cutout: '62%'
@@ -533,7 +721,7 @@ function renderDefectSharesChart(inspections) {
 }
 
 /**
- * Initializes filter dropdowns & recenter button
+ * Initializes filter dropdowns, search input, and action buttons
  */
 function initFilterControls() {
     const filterRisk = document.getElementById('filter-risk');
@@ -544,6 +732,7 @@ function initFilterControls() {
     const btnRecenter = document.getElementById('btn-recenter-map');
     const btnReset = document.getElementById('btn-reset-map');
     const btnClose = document.getElementById('btn-close-detail');
+    const btnViewReport = document.getElementById('sel-view-report-btn');
 
     [filterRisk, filterZone, filterState, filterCat].forEach(el => {
         el?.addEventListener('change', () => renderMarkers());
@@ -558,9 +747,15 @@ function initFilterControls() {
             if (filterRisk) filterRisk.value = 'ALL';
             if (filterZone) filterZone.value = 'ALL';
             if (filterSearch) filterSearch.value = '';
+            
+            if (stateBoundaryLayer && map) {
+                map.removeLayer(stateBoundaryLayer);
+                stateBoundaryLayer = null;
+            }
+
             renderMarkers();
             if (map) {
-                map.setView([22.5937, 78.9629], 5);
+                map.setView([22.5, 79.5], 5);
             }
         });
     }
@@ -568,9 +763,15 @@ function initFilterControls() {
     if (btnRecenter) {
         btnRecenter.addEventListener('click', () => {
             if (filterState) filterState.value = 'ALL';
+            
+            if (stateBoundaryLayer && map) {
+                map.removeLayer(stateBoundaryLayer);
+                stateBoundaryLayer = null;
+            }
+
             renderMarkers();
             if (map) {
-                map.setView([22.5937, 78.9629], 5);
+                map.setView([22.5, 79.5], 5);
             }
         });
     }
@@ -578,6 +779,14 @@ function initFilterControls() {
     if (btnClose) {
         btnClose.addEventListener('click', () => {
             document.getElementById('location-detail-panel')?.classList.add('d-none');
+        });
+    }
+
+    if (btnViewReport) {
+        btnViewReport.addEventListener('click', () => {
+            if (currentlySelectedInspection) {
+                openFullReportModal(currentlySelectedInspection);
+            }
         });
     }
 }

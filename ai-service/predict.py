@@ -1,5 +1,5 @@
 """
-TRACK DAMAGE ANALYZER – AI Inference & Defect Detection Engine
+TRACKVISION GUARD – AI Inference & Defect Detection Engine
 Phase 3: Multi-Source Railway Track Defect Localization, Generalization & Hybrid Analysis.
 Supports YOLO11 weights alongside candidate feature analysis for expanded defect classes.
 """

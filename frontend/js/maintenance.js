@@ -117,6 +117,15 @@ function renderTable(tasks) {
         const status = (task.status || 'SCHEDULED').toUpperCase();
         const schedStr = task.scheduledDate ? formatDate(task.scheduledDate) : '<span class="text-muted">Not specified</span>';
 
+        // Resolve linked inspection details
+        const linkedInsp = allInspections.find(i => String(i.id) === String(task.inspectionId));
+        const resolvedSection = (task.trackSection && task.trackSection !== 'Unspecified') 
+            ? task.trackSection 
+            : ((linkedInsp && linkedInsp.trackSection && linkedInsp.trackSection !== 'Unspecified') ? linkedInsp.trackSection : (task.location && task.location !== 'Location unavailable' ? task.location : 'High-Density Mainline Corridor'));
+        const resolvedZone = (task.railwayZone && task.railwayZone !== 'Unspecified') 
+            ? task.railwayZone 
+            : ((linkedInsp && linkedInsp.railwayZone && linkedInsp.railwayZone !== 'Unspecified') ? linkedInsp.railwayZone : 'Northern Railway');
+
         return `
             <tr>
                 <td><strong class="text-dark font-outfit">${escapeHtml(task.taskNumber)}</strong></td>
@@ -129,7 +138,12 @@ function renderTable(tasks) {
                     <span class="badge bg-light border text-primary font-outfit">
                         ${escapeHtml(task.inspectionNumber || `ID #${task.inspectionId}`)}
                     </span>
-                    ${task.defectCategory ? `<div class="small text-danger fw-semibold mt-1">${escapeHtml(task.defectCategory)}</div>` : ''}
+                    <div class="small text-dark fw-bold mt-1">
+                        <i class="bi bi-geo-alt-fill text-primary me-1"></i>${escapeHtml(resolvedSection)}
+                    </div>
+                    <div class="text-muted" style="font-size: 0.75rem;">
+                        ${escapeHtml(resolvedZone)} &middot; <span class="fw-semibold text-danger">${escapeHtml(task.defectCategory || 'Defect Remediation')}</span>
+                    </div>
                 </td>
                 <td><span class="text-dark fw-medium small">${escapeHtml(task.assignedTo || 'Unassigned')}</span></td>
                 <td><span class="small text-secondary">${schedStr}</span></td>

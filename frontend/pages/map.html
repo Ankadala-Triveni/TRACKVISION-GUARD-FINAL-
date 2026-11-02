@@ -213,22 +213,28 @@
                     <label for="filter-state" class="small fw-bold text-dark me-1"><i class="bi bi-geo-alt-fill text-primary"></i> State:</label>
                     <select id="filter-state" class="form-select form-select-sm fw-semibold" style="min-width: 175px;">
                         <option value="ALL">All Indian States (National View)</option>
-                        <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="West Bengal">West Bengal</option>
-                        <option value="Bihar">Bihar</option>
-                        <option value="Madhya Pradesh">Madhya Pradesh</option>
                         <option value="Andhra Pradesh">Andhra Pradesh</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Rajasthan">Rajasthan</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Odisha">Odisha</option>
                         <option value="Assam">Assam</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Punjab">Punjab</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Delhi">Delhi &amp; NCR</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
                         <option value="Haryana">Haryana</option>
+                        <option value="Jammu & Kashmir">Jammu &amp; Kashmir</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Odisha">Odisha</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
                     </select>
                 </div>
 
@@ -322,9 +328,9 @@
                     </div>
                 </div>
                 <div class="col-md-2 text-md-end">
-                    <a href="inspection-history.html" class="btn btn-rg btn-sm" id="sel-view-report-btn">
-                        <i class="bi bi-eye me-1"></i> Full Report
-                    </a>
+                    <button type="button" class="btn btn-rg btn-sm" id="sel-view-report-btn">
+                        <i class="bi bi-file-earmark-text me-1"></i> Full Report
+                    </button>
                 </div>
             </div>
         </div>
@@ -365,6 +371,136 @@
         </div>
     </main>
 
+    <!-- Comprehensive Location-Specific Full Inspection Report Modal -->
+    <div class="modal fade" id="fullReportModal" tabindex="-1" aria-labelledby="fullReportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content" style="border-radius: 16px; border: 1px solid var(--rg-border); overflow: hidden;">
+                <div class="modal-header bg-primary text-white p-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check fs-4"></i>
+                        <div>
+                            <h5 class="modal-title font-outfit fw-bold mb-0 text-white" id="fullReportModalLabel">
+                                TRACKVISION GUARD – Official Railway Safety Inspection Report
+                            </h5>
+                            <span class="small opacity-75">Geotagged NDT &amp; Deep Learning Track Flaw Audit</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4" style="background: #f8fafc;">
+                    <!-- Key Identification Card -->
+                    <div class="card border-0 shadow-sm p-3 mb-3 bg-white rounded-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <span class="badge bg-primary font-outfit fs-6 px-3 py-2" id="modal-rep-number">TVG-INSP-001</span>
+                                <span class="badge bg-light border text-dark ms-2 font-outfit" id="modal-rep-source">Official CRS Safety Audit</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="risk-badge" id="modal-rep-risk-badge">CRITICAL</span>
+                                <div class="text-end">
+                                    <div class="small text-muted" style="line-height:1;">Safety Risk Score</div>
+                                    <strong class="font-outfit fs-5 text-dark" id="modal-rep-score">92.5</strong><span class="text-muted small">/100</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location & Railway Grid Info -->
+                    <div class="card border-0 shadow-sm p-3 mb-3 bg-white rounded-3">
+                        <h6 class="text-primary font-outfit fw-bold border-bottom pb-2 mb-3">
+                            <i class="bi bi-geo-alt-fill me-1"></i> Geospatial &amp; Railway Infrastructure Details
+                        </h6>
+                        <div class="row g-3 small">
+                            <div class="col-sm-6 col-md-4">
+                                <span class="text-muted d-block">State / Territory:</span>
+                                <strong class="text-dark" id="modal-rep-state">-</strong>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <span class="text-muted d-block">Railway Zone:</span>
+                                <strong class="text-dark" id="modal-rep-zone">-</strong>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <span class="text-muted d-block">Division:</span>
+                                <strong class="text-dark" id="modal-rep-div">-</strong>
+                            </div>
+                            <div class="col-12">
+                                <span class="text-muted d-block">Track Section &amp; Milestone:</span>
+                                <strong class="text-dark" id="modal-rep-section">-</strong>
+                            </div>
+                            <div class="col-md-7">
+                                <span class="text-muted d-block">Location Description &amp; Terrain:</span>
+                                <span class="text-secondary" id="modal-rep-location">-</span>
+                            </div>
+                            <div class="col-md-5">
+                                <span class="text-muted d-block">GPS Coordinates:</span>
+                                <code class="text-primary font-monospace fs-6" id="modal-rep-gps">-</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Defect Evaluation & AI Diagnostic -->
+                    <div class="card border-0 shadow-sm p-3 mb-3 bg-white rounded-3">
+                        <h6 class="text-primary font-outfit fw-bold border-bottom pb-2 mb-3">
+                            <i class="bi bi-cpu-fill me-1"></i> Defect Analysis &amp; YOLO11 AI Diagnostic
+                        </h6>
+                        <div class="row g-3 small">
+                            <div class="col-md-6">
+                                <span class="text-muted d-block">Primary Detected Anomaly:</span>
+                                <strong class="text-danger fs-6" id="modal-rep-defect">-</strong>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="text-muted d-block">Defect Category:</span>
+                                <span class="badge bg-secondary font-outfit px-2 py-1" id="modal-rep-cat">-</span>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="text-muted d-block">Inspection Date:</span>
+                                <strong class="text-dark" id="modal-rep-date">-</strong>
+                            </div>
+                            <div class="col-12">
+                                <span class="text-muted d-block">Certified Inspector / AI Agent:</span>
+                                <span class="text-secondary" id="modal-rep-inspector">TrackVision AI YOLO11 / Field Engineer (CRS Audit Team)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Engineering Recommendation & Directive -->
+                    <div class="card border-0 shadow-sm p-3 mb-2 bg-white rounded-3">
+                        <h6 class="text-primary font-outfit fw-bold border-bottom pb-2 mb-3">
+                            <i class="bi bi-wrench-adjustable me-1"></i> Maintenance Directive &amp; Operational Protocol
+                        </h6>
+                        <div class="p-3 rounded mb-3" id="modal-rep-action-box" style="background: #fef2f2; border-left: 4px solid #ef4444;">
+                            <div class="small fw-bold text-danger mb-1" id="modal-rep-urgency">Immediate Corrective Action Required</div>
+                            <div class="text-dark small" id="modal-rep-action">-</div>
+                        </div>
+                        <div class="row g-2 small">
+                            <div class="col-sm-6">
+                                <span class="text-muted">Work Order Status:</span>
+                                <span class="badge bg-info text-dark ms-1" id="modal-rep-maint">Scheduled</span>
+                            </div>
+                            <div class="col-sm-6 text-sm-end">
+                                <span class="text-muted">Compliance Standards:</span>
+                                <strong class="text-dark">IRS T-12 / UIC 860</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-modal-export-csv">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i> Print / Save PDF
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Leaflet JS -->
@@ -373,6 +509,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- All-India Dataset -->
     <script src="../js/all-india-data.js"></script>
+    <!-- Indian States GeoJSON Boundaries for Boundary Highlighting -->
+    <script src="../js/india-states-geojson.js"></script>
     <!-- Navigation JS -->
     <script src="../js/navigation.js"></script>
     <!-- Map Controller JS -->
