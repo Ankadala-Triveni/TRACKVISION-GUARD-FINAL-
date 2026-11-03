@@ -37,7 +37,7 @@ build/
 .ruff_cache/
 
 # ── YOLO / Models ────────────────────────────────────────────
-ai-service/models/*.pt
+# Pretrained & fine-tuned models (<25MB) are included for ready-to-run deployment
 ai-service/models/*.onnx
 ai-service/models/*.pkl
 runs/
@@ -85,7 +85,7 @@ scratch/
 backend/railguard/uploads/
 .venv/
 venv/
-*.pt
+# *.pt (tracked for TrackVision Guard deployment)
 
 # ── Temporary ────────────────────────────────────────────────
 tmp/
