@@ -8,8 +8,8 @@
  * and comprehensive engineering report generation.
  */
 
-var API_URL = (window.RAILGUARD_CONFIG && window.RAILGUARD_CONFIG.API_URL) ? window.RAILGUARD_CONFIG.API_URL : 'http://localhost:8080/api';
-var token = localStorage.getItem('token');
+const API_URL = 'http://localhost:8080/api';
+const token = localStorage.getItem('token');
 
 let map = null;
 let markersGroup = null;
@@ -363,10 +363,13 @@ function renderMarkers() {
                 <div style="background: #f8fafc; border-left: 3px solid ${color}; padding: 4px 8px; font-size: 0.75rem; color: #334155; margin-bottom: 8px; border-radius: 4px;">
                     <strong>Action:</strong> ${escapeHtml(insp.recommendedAction || 'Normal Patrol')}
                 </div>
-                <div class="text-end">
-                    <button class="btn btn-primary btn-sm py-1 px-3 text-white fw-semibold" style="font-size: 0.75rem;" onclick="showLocationDetailById('${insp.id}')">
-                        Inspect Section &rarr;
+                <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm py-1 px-2 fw-semibold" style="font-size: 0.74rem;" onclick="showLocationDetailById('${insp.id}')">
+                        <i class="bi bi-file-earmark-text"></i> Full Report
                     </button>
+                    <a href="inspection.html?section=${encodeURIComponent(insp.trackSection || '')}&zone=${encodeURIComponent(insp.railwayZone || '')}&state=${encodeURIComponent(insp.state || '')}" class="btn btn-primary btn-sm py-1 px-3 text-white fw-semibold text-decoration-none" style="font-size: 0.74rem;">
+                        <i class="bi bi-camera-fill me-1"></i> Inspect Section &rarr;
+                    </a>
                 </div>
             </div>
         `;
@@ -440,7 +443,10 @@ function showLocationDetail(insp) {
 
 window.showLocationDetailById = function(id) {
     const found = allGeoInspections.find(i => String(i.id) === String(id));
-    if (found) showLocationDetail(found);
+    if (found) {
+        showLocationDetail(found);
+        openFullReportModal(found);
+    }
 };
 
 /**

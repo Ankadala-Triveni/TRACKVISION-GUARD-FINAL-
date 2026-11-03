@@ -52,11 +52,33 @@ public class UserService {
     private final CaptchaService captchaService;
     private final GoogleAuthService googleAuthService;
 
+    private static final java.util.Set<String> COMMON_PASSWORDS = java.util.Set.of(
+            "12345678", "123456789", "1234567890", "password", "password123",
+            "qwertyui", "qwertyuiop", "admin123", "admin1234", "administrator",
+            "railguard", "railway123", "trackvision", "welcome1", "welcome123",
+            "11111111", "00000000", "pass1234", "password1", "iloveyou"
+    );
+
+    private boolean isCommonOrPredictablePassword(String rawPassword) {
+        if (rawPassword == null) return true;
+        String clean = rawPassword.trim().toLowerCase();
+        if (COMMON_PASSWORDS.contains(clean)) return true;
+        if (clean.matches("^(.)\\1{7,}$")) return true;
+        return false;
+    }
+
     /**
      * Registers a new user. Default role is securely assigned to INSPECTOR.
      */
     @Transactional
     public UserResponse register(RegisterRequest request) {
+        if (request.getPassword() == null || request.getPassword().length() < 8) {
+            throw new IllegalArgumentException("Password must contain at least 8 characters.");
+        }
+        if (isCommonOrPredictablePassword(request.getPassword())) {
+            throw new IllegalArgumentException("This password is too common, easily guessed, or predictable. Please choose a more secure password.");
+        }
+
         if (request.getCaptchaId() != null && !request.getCaptchaId().trim().isEmpty()) {
             boolean valid = captchaService.validateCaptcha(request.getCaptchaId(), request.getCaptchaAnswer());
             if (!valid) {

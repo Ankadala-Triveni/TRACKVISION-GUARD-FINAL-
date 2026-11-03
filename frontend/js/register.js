@@ -2,11 +2,14 @@
  * TRACKVISION GUARD – Registration Page Controller
  * Theme: Sky Blue + Slate Blue
  * Features:
- * - Proper RFC-Compliant Email & Username Validation (Supports .in, .com, .ac.uk, .ac.in, .gov.in, etc.)
- * - Alphanumeric Anti-Bot CAPTCHA (Canvas-rendered with visual distortion, instant rendering)
- * - Real Website Google Sign-In Experience (Centered Account Chooser Popup)
- * - Password Visibility Toggles
- * - Frontend Confirmation Checks & Backend Registration
+ * - Real-Time Dynamic Password Strength Indicator (Weak, Medium, Strong)
+ * - Flexible Combinations (Any style allowed, min 8 chars required)
+ * - Known-Compromised & Predictable Password Guard
+ * - Confirmation Password Live Matching
+ * - RFC-Compliant Email Validation (.in, .com, .ac, .uk, .ac.in, etc.)
+ * - Anti-Bot Visual Alphanumeric CAPTCHA
+ * - Google Sign-In Integration
+ * - Spring Boot 3 & JWT Backend Integration
  */
 
 const API_URL = 'http://localhost:8080/api';
@@ -33,7 +36,180 @@ function initRegisterPage() {
     const captchaAnswerInput = document.getElementById('captcha-answer');
     const btnRefreshCaptcha = document.getElementById('btn-refresh-captcha');
 
-    // ── 0. Alphanumeric Visual CAPTCHA ──
+    // Password strength UI elements
+    const strengthLabel = document.getElementById('strength-label');
+    const strengthBar1 = document.getElementById('strength-bar-1');
+    const strengthBar2 = document.getElementById('strength-bar-2');
+    const strengthBar3 = document.getElementById('strength-bar-3');
+    const strengthFeedback = document.getElementById('strength-feedback');
+    const confirmMatchFeedback = document.getElementById('confirm-match-feedback');
+
+    // Known common / compromised passwords list for local privacy-preserving check
+    const COMMON_PASSWORDS = new Set([
+        '12345678', '123456789', '1234567890', 'password', 'password123',
+        'qwertyui', 'qwertyuiop', 'admin123', 'admin1234', 'administrator',
+        'railguard', 'railway123', 'trackvision', 'welcome1', 'welcome123',
+        '11111111', '00000000', 'pass1234', 'password1', 'iloveyou'
+    ]);
+
+    // ── 0. Real-Time Password Strength Evaluator ──
+    function evaluatePasswordStrength(pwd) {
+        if (!pwd || pwd.length === 0) {
+            return {
+                level: 'weak',
+                label: '🔴 Weak',
+                bars: 0,
+                feedback: 'Password must contain at least 8 characters.',
+                isValidLength: false,
+                isCommon: false
+            };
+        }
+
+        const len = pwd.length;
+        const lowerPwd = pwd.toLowerCase().trim();
+
+        // 1. Length check (< 8 is always weak)
+        if (len < 8) {
+            return {
+                level: 'weak',
+                label: '🔴 Weak',
+                bars: 1,
+                feedback: `Password is too short (${len}/8 characters required).`,
+                isValidLength: false,
+                isCommon: false
+            };
+        }
+
+        // 2. Common / easily guessed dictionary check
+        if (COMMON_PASSWORDS.has(lowerPwd)) {
+            return {
+                level: 'weak',
+                label: '🔴 Weak',
+                bars: 1,
+                feedback: 'This password is too commonly used and easily guessed. Choose a more unique combination.',
+                isValidLength: true,
+                isCommon: true
+            };
+        }
+
+        // 3. Repeated identical characters (e.g. "aaaaaaaa", "11111111")
+        if (/^(.)\1{7,}$/.test(lowerPwd)) {
+            return {
+                level: 'weak',
+                label: '🔴 Weak',
+                bars: 1,
+                feedback: 'Password contains repeated identical characters. Use more variety.',
+                isValidLength: true,
+                isCommon: true
+            };
+        }
+
+        // 4. Sequential keyboard sequences (e.g. "abcdefgh", "87654321")
+        const sequentialAlpha = 'abcdefghijklmnopqrstuvwxyz';
+        const sequentialNum = '012345678909876543210';
+        if (sequentialAlpha.includes(lowerPwd) || sequentialNum.includes(lowerPwd)) {
+            return {
+                level: 'weak',
+                label: '🔴 Weak',
+                bars: 1,
+                feedback: 'Password is a simple sequential pattern. Make it less predictable.',
+                isValidLength: true,
+                isCommon: true
+            };
+        }
+
+        // 5. Evaluate complexity & entropy (character variety + length)
+        const hasLower = /[a-z]/.test(pwd);
+        const hasUpper = /[A-Z]/.test(pwd);
+        const hasDigits = /[0-9]/.test(pwd);
+        const hasSymbols = /[^a-zA-Z0-9]/.test(pwd);
+        const varietyCount = [hasLower, hasUpper, hasDigits, hasSymbols].filter(Boolean).length;
+
+        // Strong Criteria:
+        // - Length >= 10 with at least 3 character varieties (e.g. "vQ7#pL9@xT2!", "River@Moon82!")
+        // - OR Length >= 14 with at least 2 character varieties
+        // - OR Length >= 8 with all 4 character varieties and high entropy
+        if ((len >= 10 && varietyCount >= 3) || (len >= 14 && varietyCount >= 2) || (len >= 8 && varietyCount === 4)) {
+            return {
+                level: 'strong',
+                label: '🟢 Strong',
+                bars: 3,
+                feedback: 'Strong & secure password. Excellent protection for your engineering account.',
+                isValidLength: true,
+                isCommon: false
+            };
+        }
+
+        // Medium Criteria:
+        // - Length >= 8 with letters + numbers (e.g. "triveni123", "hello@123")
+        // - OR long passwords containing single character type (e.g. "abcdefghijkl" or "987654321012")
+        return {
+            level: 'medium',
+            label: '🟠 Medium',
+            bars: 2,
+            feedback: 'Fair password. Consider adding uppercase letters, symbols, or making it 10+ characters for maximum security.',
+            isValidLength: true,
+            isCommon: false
+        };
+    }
+
+    // Update Strength Indicator UI in real time
+    function updateStrengthUI() {
+        const pwd = passwordInput?.value || '';
+        const res = evaluatePasswordStrength(pwd);
+
+        // Update Label
+        if (strengthLabel) {
+            strengthLabel.className = `strength-label ${res.level}`;
+            strengthLabel.textContent = res.label;
+        }
+
+        // Update Bars
+        [strengthBar1, strengthBar2, strengthBar3].forEach((bar, idx) => {
+            if (!bar) return;
+            bar.className = 'strength-bar-segment';
+            if (idx < res.bars) {
+                bar.classList.add(`active-${res.level}`);
+            }
+        });
+
+        // Update Feedback text
+        if (strengthFeedback) {
+            strengthFeedback.className = `strength-feedback ${res.level}`;
+            strengthFeedback.textContent = res.feedback;
+        }
+
+        // Re-check confirm password matching
+        updateConfirmMatchUI();
+    }
+
+    // Live confirm password matcher
+    function updateConfirmMatchUI() {
+        if (!confirmMatchFeedback) return;
+        const pwd = passwordInput?.value || '';
+        const confirmPwd = confirmPasswordInput?.value || '';
+
+        if (!confirmPwd) {
+            confirmMatchFeedback.textContent = '';
+            return;
+        }
+
+        if (pwd === confirmPwd) {
+            confirmMatchFeedback.style.color = '#059669';
+            confirmMatchFeedback.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Passwords match';
+        } else {
+            confirmMatchFeedback.style.color = '#dc2626';
+            confirmMatchFeedback.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> Passwords do not match';
+        }
+    }
+
+    passwordInput?.addEventListener('input', updateStrengthUI);
+    confirmPasswordInput?.addEventListener('input', updateConfirmMatchUI);
+
+    // Initial evaluation
+    updateStrengthUI();
+
+    // ── 1. Alphanumeric Visual CAPTCHA ──
     const CAPTCHA_CHARS = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
     let currentCaptchaCode = window.__RG_REG_CAPTCHA || '';
 
@@ -52,26 +228,23 @@ function initRegisterPage() {
         if (captchaAnswerInput) captchaAnswerInput.value = '';
 
         const ctx = captchaCanvas.getContext('2d');
-        const w = captchaCanvas.width || 160;
-        const h = captchaCanvas.height || 46;
+        const w = captchaCanvas.width || 150;
+        const h = captchaCanvas.height || 40;
 
-        // Clean subtle light blue gradient background
         const grad = ctx.createLinearGradient(0, 0, w, h);
         grad.addColorStop(0, '#e0f2fe');
         grad.addColorStop(1, '#dbeafe');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
 
-        // Canvas border
         ctx.strokeStyle = '#93c5fd';
         ctx.lineWidth = 1;
         ctx.strokeRect(0, 0, w, h);
 
-        // Security noise lines
         const lineColors = ['#60a5fa', '#3b82f6', '#818cf8', '#38bdf8'];
         for (let i = 0; i < 4; i++) {
             ctx.strokeStyle = lineColors[i % lineColors.length];
-            ctx.lineWidth = 1.4;
+            ctx.lineWidth = 1.3;
             ctx.beginPath();
             ctx.moveTo(Math.random() * w, Math.random() * h);
             ctx.bezierCurveTo(
@@ -82,41 +255,38 @@ function initRegisterPage() {
             ctx.stroke();
         }
 
-        // Draw distorted alphanumeric characters
         const textColors = ['#1e40af', '#0369a1', '#1d4ed8', '#1e3a8a', '#2563eb'];
         const chars = currentCaptchaCode.split('');
-        const step = (w - 24) / chars.length;
+        const step = (w - 20) / chars.length;
 
         chars.forEach((char, idx) => {
             ctx.save();
-            const x = 14 + idx * step;
-            const y = 32 + (Math.random() * 4 - 2);
-            const angle = (Math.random() * 0.3) - 0.15;
+            const x = 12 + idx * step;
+            const y = 28 + (Math.random() * 4 - 2);
+            const angle = (Math.random() * 0.28) - 0.14;
             ctx.translate(x, y);
             ctx.rotate(angle);
-            ctx.font = 'bold 23px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+            ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
             ctx.fillStyle = textColors[idx % textColors.length];
             ctx.fillText(char, 0, 0);
             ctx.restore();
         });
 
-        // Anti-bot noise dots
         ctx.fillStyle = '#64748b';
-        for (let i = 0; i < 18; i++) {
+        for (let i = 0; i < 15; i++) {
             ctx.beginPath();
-            ctx.arc(Math.random() * w, Math.random() * h, 1.2, 0, Math.PI * 2);
+            ctx.arc(Math.random() * w, Math.random() * h, 1.1, 0, Math.PI * 2);
             ctx.fill();
         }
     }
 
-    // If not already drawn, render now
     if (!currentCaptchaCode) {
         renderCanvasCaptcha();
     }
     btnRefreshCaptcha?.addEventListener('click', renderCanvasCaptcha);
     captchaCanvas?.addEventListener('click', renderCanvasCaptcha);
 
-    // ── 1. Password Visibility Toggles ──
+    // ── 2. Password Visibility Toggles ──
     togglePasswordBtn?.addEventListener('click', () => {
         const isPassword = passwordInput.getAttribute('type') === 'password';
         passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
@@ -129,7 +299,7 @@ function initRegisterPage() {
         toggleConfirmIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
     });
 
-    // ── 2. Alert Helpers ──
+    // ── 3. Alert Helpers ──
     function showError(msg) {
         if (alertSuccess) alertSuccess.classList.remove('show');
         if (alertError) {
@@ -153,8 +323,7 @@ function initRegisterPage() {
         if (alertSuccess) alertSuccess.classList.remove('show');
     }
 
-    // ── 3. RFC-Compliant Email Validation Helper ──
-    // Strictly validates official email addresses, supporting .in, .com, .ac.uk, .ac.in, .gov.in, etc.
+    // ── 4. RFC-Compliant Email Validation Helper ──
     function isValidEmail(val) {
         if (!val || typeof val !== 'string') return false;
         const clean = val.trim();
@@ -163,7 +332,7 @@ function initRegisterPage() {
         return emailRegex.test(clean);
     }
 
-    // ── 4. Standard Registration Submit ──
+    // ── 5. Standard Registration Submit ──
     registerForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearAlerts();
@@ -175,7 +344,7 @@ function initRegisterPage() {
         const confirmPassword = confirmPasswordInput?.value || '';
         const userCaptcha = (captchaAnswerInput?.value || '').trim().toUpperCase();
 
-        // Validations
+        // 1. Basic Fields Validation
         if (!fullName) {
             showError('Please enter your full name.');
             fullNameInput?.focus();
@@ -189,23 +358,34 @@ function initRegisterPage() {
         }
 
         if (!email || !isValidEmail(email)) {
-            showError('Please enter a valid official email address (e.g. inspector@railways.gov.in or .in, .com, .ac.uk).');
+            showError('Please enter a valid official email address (e.g. inspector@railways.gov.in or .in, .com, .ac, .uk).');
             emailInput?.focus();
             return;
         }
 
+        // 2. Strict Minimum Length Check (>= 8 characters)
         if (!password || password.length < 8) {
-            showError('Password must be at least 8 characters long.');
+            showError('Password must contain at least 8 characters.');
             passwordInput?.focus();
             return;
         }
 
+        // 3. Known Common Password Rejection
+        const strength = evaluatePasswordStrength(password);
+        if (strength.isCommon) {
+            showError('This password is too commonly used, easily guessed, or predictable. Please choose a more secure password.');
+            passwordInput?.focus();
+            return;
+        }
+
+        // 4. Confirm Password Match
         if (password !== confirmPassword) {
-            showError('Passwords do not match. Please verify both password fields.');
+            showError('Passwords do not match. Please ensure both password fields are identical.');
             confirmPasswordInput?.focus();
             return;
         }
 
+        // 5. CAPTCHA Verification
         if (!userCaptcha) {
             showError('Please enter the security verification characters shown in the box.');
             captchaAnswerInput?.focus();
@@ -249,13 +429,13 @@ function initRegisterPage() {
                 throw new Error(data.message || 'Registration failed. Please check your details.');
             }
 
-            showSuccess('Account successfully registered! Redirecting to login portal...');
+            showSuccess('Registration successful! Redirecting to login portal...');
             setTimeout(() => {
                 window.location.href = 'login.html';
             }, 1200);
 
         } catch (err) {
-            showError(err.message || 'Registration failed. Please check entered information.');
+            showError(err.message || 'An error occurred during registration. Please try again.');
             renderCanvasCaptcha();
         } finally {
             btnSubmit.disabled = false;
@@ -264,110 +444,13 @@ function initRegisterPage() {
         }
     });
 
-    // ── 5. Real Website Google Sign-In Experience ──
-    initGoogleAuth();
-
-    async function initGoogleAuth() {
-        let googleConfig = { googleClientId: '', googleAuthEnabled: false };
-        try {
-            const res = await fetch(`${API_URL}/auth/config`);
-            if (res.ok) {
-                googleConfig = await res.json();
-            }
-        } catch (e) {
-            // Local fallback
-        }
-
-        // If official Google Cloud OAuth Client ID is registered and GIS is available
-        if (googleConfig.googleAuthEnabled && googleConfig.googleClientId && window.google?.accounts?.id) {
-            try {
-                google.accounts.id.initialize({
-                    client_id: googleConfig.googleClientId,
-                    callback: async (response) => {
-                        clearAlerts();
-                        try {
-                            const res = await fetch(`${API_URL}/auth/google`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ idToken: response.credential })
-                            });
-                            const data = await res.json();
-                            if (!res.ok) throw new Error(data.message || 'Google token verification rejected by backend.');
-
-                            localStorage.setItem('token', data.token);
-                            localStorage.setItem('user', JSON.stringify({
-                                id: data.userId || data.id,
-                                username: data.username,
-                                fullName: data.fullName,
-                                email: data.email,
-                                role: data.role
-                            }));
-                            showSuccess(`Google Sign-In successful! Welcome, ${data.fullName || data.email}.`);
-                            setTimeout(() => window.location.href = 'dashboard.html', 400);
-                        } catch (err) {
-                            showError(err.message || 'Google authentication failed.');
-                        }
-                    }
-                });
-            } catch (e) {
-                console.warn('GIS initialize notice:', e);
-            }
-        }
-
-        btnGoogle?.addEventListener('click', () => {
-            clearAlerts();
-
-            if (googleConfig.googleAuthEnabled && googleConfig.googleClientId && window.google?.accounts?.id) {
-                google.accounts.id.prompt();
-                return;
-            }
-
-            // Calculate centered popup coordinates for Google Sign-In window
-            const w = 480;
-            const h = 640;
-            const left = Math.max(0, (window.screen.width - w) / 2);
-            const top = Math.max(0, (window.screen.height - h) / 2);
-
-            const userEmail = (emailInput?.value || '').trim();
-            const chooserUrl = `google-account-chooser.html?email=${encodeURIComponent(userEmail)}`;
-
-            // Open genuine Google Account Chooser popup
-            const popup = window.open(
-                chooserUrl,
-                'GoogleSignIn',
-                `width=${w},height=${h},top=${top},left=${left},status=no,resizable=yes,scrollbars=yes`
-            );
-
-            if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-                window.location.href = chooserUrl;
-            }
-        });
-
-        // Receive verified Google authentication message from popup
-        window.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'RAILGUARD_GOOGLE_AUTH_SUCCESS') {
-                const userData = event.data.user;
-                localStorage.setItem('token', event.data.token);
-                localStorage.setItem('user', JSON.stringify({
-                    id: userData.userId || userData.id,
-                    username: userData.username,
-                    fullName: userData.fullName,
-                    email: userData.email,
-                    role: userData.role
-                }));
-
-                showSuccess(`Google Sign-In successful! Welcome, ${userData.fullName || userData.email}.`);
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 400);
-            }
-        });
-    }
+    // ── 6. Google Sign-In Integration ──
+    btnGoogle?.addEventListener('click', () => {
+        const width = 500, height = 620;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        window.open('google-account-chooser.html', 'GoogleSignIn', `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no`);
+    });
 }
 
-// Bulletproof execution: runs immediately if DOM is ready, or on DOMContentLoaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initRegisterPage);
-} else {
-    initRegisterPage();
-}
+document.addEventListener('DOMContentLoaded', initRegisterPage);

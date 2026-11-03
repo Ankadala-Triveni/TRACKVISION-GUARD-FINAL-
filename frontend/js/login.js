@@ -20,9 +20,9 @@ function initLoginPage() {
     const toggleIcon = document.getElementById('toggle-icon');
     const alertError = document.getElementById('alert-error');
     const alertSuccess = document.getElementById('alert-success');
-    const btnSubmit = document.getElementById('btn-submit');
-    const btnSpinner = document.getElementById('btn-spinner');
-    const btnText = document.getElementById('btn-text');
+    const btnSubmit = document.getElementById('btn-login') || document.getElementById('btn-submit');
+    const btnSpinner = document.getElementById('login-spinner') || document.getElementById('btn-spinner');
+    const btnText = document.getElementById('login-btn-text') || document.getElementById('btn-text');
     const btnGoogle = document.getElementById('btn-google-login');
     const rememberMeInput = document.getElementById('remember-me');
     const captchaCanvas = document.getElementById('login-captcha-canvas');
@@ -100,11 +100,16 @@ function initLoginPage() {
         }
     }
 
-    if (!currentCaptchaCode) {
+    // Render CAPTCHA immediately on initialization
+    renderCanvasCaptcha();
+    btnRefreshCaptcha?.addEventListener('click', (e) => {
+        if (e) e.preventDefault();
         renderCanvasCaptcha();
-    }
-    btnRefreshCaptcha?.addEventListener('click', renderCanvasCaptcha);
-    captchaCanvas?.addEventListener('click', renderCanvasCaptcha);
+    });
+    captchaCanvas?.addEventListener('click', (e) => {
+        if (e) e.preventDefault();
+        renderCanvasCaptcha();
+    });
 
     // Restore remembered username/email
     const savedUser = localStorage.getItem('remembered_user');
@@ -132,34 +137,54 @@ function initLoginPage() {
 
     // ── 3. Alert Helpers ──
     function showError(msg) {
-        if (alertSuccess) alertSuccess.classList.remove('show');
+        if (alertSuccess) {
+            alertSuccess.innerText = '';
+            alertSuccess.classList.remove('show');
+            alertSuccess.style.display = 'none';
+        }
         if (alertError) {
             alertError.innerText = msg;
             alertError.classList.add('show');
+            alertError.style.display = 'block';
+            try { alertError.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
         }
     }
 
     function showSuccess(msg) {
-        if (alertError) alertError.classList.remove('show');
+        if (alertError) {
+            alertError.innerText = '';
+            alertError.classList.remove('show');
+            alertError.style.display = 'none';
+        }
         if (alertSuccess) {
             alertSuccess.innerText = msg;
             alertSuccess.classList.add('show');
+            alertSuccess.style.display = 'block';
+            try { alertSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
         }
     }
 
     function clearAlerts() {
-        if (alertError) alertError.classList.remove('show');
-        if (alertSuccess) alertSuccess.classList.remove('show');
+        if (alertError) {
+            alertError.innerText = '';
+            alertError.classList.remove('show');
+            alertError.style.display = 'none';
+        }
+        if (alertSuccess) {
+            alertSuccess.innerText = '';
+            alertSuccess.classList.remove('show');
+            alertSuccess.style.display = 'none';
+        }
     }
 
     // ── 4. Standard Email/Username + Password Login ──
-    loginForm?.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    async function handleLoginSubmit(e) {
+        if (e) e.preventDefault();
         clearAlerts();
 
         const identifier = (usernameOrEmailInput?.value || '').trim();
         const password = passwordInput?.value || '';
-        const userCaptcha = (captchaAnswerInput?.value || '').trim().toUpperCase();
+        const userCaptcha = (captchaAnswerInput?.value || '').replace(/\s+/g, '').toUpperCase();
 
         // Validation Checks
         if (!identifier) {
@@ -175,22 +200,22 @@ function initLoginPage() {
             return;
         }
 
-        // Password minimum length check
-        if (!password || password.length < 8) {
-            showError('Password must be at least 8 characters long.');
+        // Password required check (allow existing valid passwords)
+        if (!password) {
+            showError('Please enter your password.');
             passwordInput?.focus();
             return;
         }
 
         // Alphanumeric CAPTCHA verification
         if (!userCaptcha) {
-            showError('Please enter the security verification characters.');
+            showError('Please enter the security verification characters shown in the box.');
             captchaAnswerInput?.focus();
             return;
         }
 
-        const expectedCode = (currentCaptchaCode || window.__RG_LOGIN_CAPTCHA || '').toUpperCase().trim();
-        if (userCaptcha !== expectedCode) {
+        const expectedCode = (currentCaptchaCode || window.__RG_LOGIN_CAPTCHA || '').replace(/\s+/g, '').toUpperCase();
+        if (expectedCode && userCaptcha !== expectedCode) {
             showError('Incorrect security verification code. Please enter the characters shown in the box.');
             captchaAnswerInput?.focus();
             renderCanvasCaptcha();
@@ -198,7 +223,7 @@ function initLoginPage() {
         }
 
         // Submit to Spring Boot Backend
-        btnSubmit.disabled = true;
+        if (btnSubmit) btnSubmit.disabled = true;
         if (btnSpinner) btnSpinner.classList.remove('d-none');
         if (btnText) btnText.innerText = 'Signing In...';
 
@@ -239,15 +264,24 @@ function initLoginPage() {
             showSuccess(`Sign in successful! Welcome, ${data.fullName || data.username}.`);
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
-            }, 500);
+            }, 400);
 
         } catch (err) {
             showError(err.message || 'Authentication failed. Please verify credentials.');
             renderCanvasCaptcha();
         } finally {
-            btnSubmit.disabled = false;
+            if (btnSubmit) btnSubmit.disabled = false;
             if (btnSpinner) btnSpinner.classList.add('d-none');
             if (btnText) btnText.innerText = 'Sign In';
+        }
+    }
+
+    loginForm?.addEventListener('submit', handleLoginSubmit);
+
+    // Also support direct click on btnSubmit
+    btnSubmit?.addEventListener('click', (e) => {
+        if (loginForm && !e.defaultPrevented) {
+            // If button is inside form, submit event triggers automatically
         }
     });
 

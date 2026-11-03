@@ -8,8 +8,8 @@
  * - Responsive navigation, session validation, and error states
  */
 
-var API_URL = (window.RAILGUARD_CONFIG && window.RAILGUARD_CONFIG.API_URL) ? window.RAILGUARD_CONFIG.API_URL : 'http://localhost:8080/api';
-var token = localStorage.getItem('token');
+const API_URL = 'http://localhost:8080/api';
+const token = localStorage.getItem('token');
 
 // Redirect immediately if not authenticated
 if (!token) {
@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchUserProfile();
     loadAllDashboardData();
     initMaintenanceModals();
-    initContinuousScrollSpy();
 });
 
 /**
@@ -902,103 +901,4 @@ function escapeHtml(str) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
-}
-
-
-/**
- * Continuous Single-Page Scrolling & Dynamic ScrollSpy
- * Highlights sidebar menu items dynamically as user scrolls through sections
- */
-function initContinuousScrollSpy() {
-    const sectionTargets = [
-        { id: 'section-dashboard', selector: 'a[href="#section-dashboard"]' },
-        { id: 'analytics-charts-grid', selector: 'a[href="#analytics-charts-grid"]' },
-        { id: 'section-inspection', selector: 'a[href="#section-inspection"]' },
-        { id: 'results-card', selector: 'a[href="#results-card"]' },
-        { id: 'section-map', selector: 'a[href="#section-map"]' },
-        { id: 'section-maintenance', selector: 'a[href="#section-maintenance"]' },
-        { id: 'section-reports', selector: 'a[href="#section-reports"]' }
-    ];
-
-    // Smooth scroll on clicking any hash-based sidebar links
-    document.querySelectorAll('.sidebar-menu a.nav-link-rg').forEach(link => {
-        link.addEventListener('click', (e) => {
-            const href = link.getAttribute('href');
-            if (href && href.startsWith('#')) {
-                e.preventDefault();
-                const targetEl = document.querySelector(href);
-                if (targetEl) {
-                    // If target is results-card and it's hidden, reveal sample inspection
-                    if (href === '#results-card' && targetEl.classList.contains('d-none')) {
-                        if (typeof window.showInspectionResultsView === 'function') {
-                            window.showInspectionResultsView();
-                        }
-                    }
-                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                    document.querySelectorAll('.sidebar-menu a.nav-link-rg').forEach(l => l.classList.remove('active'));
-                    link.classList.add('active');
-
-                    // If map target, refresh leaflet layout
-                    if (href === '#section-map') {
-                        if (window.map && typeof window.map.invalidateSize === 'function') {
-                            setTimeout(() => window.map.invalidateSize(), 300);
-                        }
-                        if (leafletMap && typeof leafletMap.invalidateSize === 'function') {
-                            setTimeout(() => leafletMap.invalidateSize(), 300);
-                        }
-                    }
-
-                    // Close mobile sidebar if open
-                    const sidebar = document.getElementById('app-sidebar');
-                    const overlay = document.getElementById('sidebar-overlay');
-                    if (sidebar && overlay && sidebar.classList.contains('show')) {
-                        sidebar.classList.remove('show');
-                        overlay.classList.remove('show');
-                    }
-                }
-            }
-        });
-    });
-
-    // Wire #btn-open-create-modal-scroll to the existing modal
-    const scrollCreateBtn = document.getElementById('btn-open-create-modal-scroll');
-    if (scrollCreateBtn) {
-        scrollCreateBtn.addEventListener('click', () => {
-            const modalEl = document.getElementById('modal-create-task');
-            if (modalEl && typeof bootstrap !== 'undefined') {
-                const modal = new bootstrap.Modal(modalEl);
-                modal.show();
-            }
-        });
-    }
-
-    // Dynamic scroll tracking with passive scroll listener
-    let ticking = false;
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(() => {
-                const scrollPos = window.scrollY + 140;
-                let activeEntry = null;
-
-                for (let i = 0; i < sectionTargets.length; i++) {
-                    const item = sectionTargets[i];
-                    const el = document.getElementById(item.id);
-                    if (el && el.offsetTop <= scrollPos) {
-                        activeEntry = item;
-                    }
-                }
-
-                if (activeEntry) {
-                    const activeLink = document.querySelector(`.sidebar-menu ${activeEntry.selector}`);
-                    if (activeLink) {
-                        document.querySelectorAll('.sidebar-menu a.nav-link-rg').forEach(l => l.classList.remove('active'));
-                        activeLink.classList.add('active');
-                    }
-                }
-                ticking = false;
-            });
-            ticking = true;
-        }
-    }, { passive: true });
 }

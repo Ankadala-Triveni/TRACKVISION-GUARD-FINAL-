@@ -1,6 +1,7 @@
 /* ==========================================================================
-   TRACKVISION GUARD – Login Page Stylesheet
-   Theme: Sky Blue + Slate Blue (Simple, Modern, Clean Professional Design)
+   TRACKVISION GUARD – Login & Registration Stylesheet
+   Theme: Sky Blue + Slate Blue (Simple, Modern, Clean Centered Card Design)
+   Matches Reference Image 1 exactly.
    ========================================================================== */
 
 :root {
@@ -8,12 +9,12 @@
     --login-card-bg: #ffffff;          /* Clean white card */
     --login-input-bg: #f8fbfe;         /* Very light blue-tinted white for inputs */
     --login-slate: #2c4f7c;            /* Slate blue primary */
-    --login-slate-hover: #213c5f;      /* Darker slate blue on hover */
+    --login-slate-hover: #1e3a5f;      /* Darker slate blue on hover */
     --login-slate-light: #e6eff8;      /* Soft slate blue background for icons */
     --login-border: #cbdde9;           /* Subtle border color */
     --login-text-dark: #1e293b;        /* High-contrast dark charcoal text */
     --login-text-muted: #64748b;       /* Clean muted slate gray */
-    --login-shadow: 0 8px 24px rgba(44, 79, 124, 0.08); /* Soft light shadow */
+    --login-shadow: 0 10px 30px rgba(44, 79, 124, 0.08); /* Soft elevated shadow */
 }
 
 body.login-page-body {
@@ -25,19 +26,20 @@ body.login-page-body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--login-text-dark);
     margin: 0;
-    padding: 1.25rem;
+    padding: 1.5rem 1rem;
 }
 
-/* Centered Clean Card */
+/* Centered Clean Card (Matching Image 1) */
 .login-card {
     background: var(--login-card-bg);
     border: 1px solid var(--login-border);
     border-radius: 14px;
-    box-shadow: 0 8px 30px rgba(44, 79, 124, 0.08);
+    box-shadow: var(--login-shadow);
     width: 100%;
-    max-width: 460px;
+    max-width: 480px;
     padding: 2.25rem 2rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin: 1rem auto;
 }
 
 .register-card {
@@ -45,10 +47,10 @@ body.login-page-body {
     padding: 2rem 2rem;
 }
 
-/* Top Branding */
+/* Brand Header */
 .login-brand-header {
     text-align: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
 .login-brand-icon {
@@ -61,7 +63,7 @@ body.login-page-body {
     align-items: center;
     justify-content: center;
     font-size: 1.6rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     border: 1px solid rgba(44, 79, 124, 0.15);
 }
 
@@ -75,16 +77,15 @@ body.login-page-body {
 }
 
 .login-brand-subtitle {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     color: var(--login-text-muted);
     margin: 0;
     line-height: 1.35;
-    font-weight: 500;
 }
 
 /* Input Fields */
 .login-form-label {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 600;
     color: var(--login-text-dark);
     margin-bottom: 0.35rem;
@@ -97,8 +98,8 @@ body.login-page-body {
     background-color: var(--login-input-bg);
     border: 1px solid var(--login-border);
     border-radius: 8px;
-    padding: 0.65rem 0.85rem;
-    font-size: 0.92rem;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.9rem;
     color: var(--login-text-dark);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
     width: 100%;
@@ -114,6 +115,7 @@ body.login-page-body {
 
 .login-input::placeholder {
     color: #94a3b8;
+    font-size: 0.85rem;
 }
 
 .login-input-group {
@@ -149,7 +151,7 @@ body.login-page-body {
 .login-link {
     color: var(--login-slate);
     font-weight: 500;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     text-decoration: none;
     transition: color 0.15s ease;
 }
@@ -165,9 +167,9 @@ body.login-page-body {
     color: #ffffff;
     border: 1px solid var(--login-slate);
     border-radius: 8px;
-    padding: 0.65rem 1rem;
+    padding: 0.62rem 1rem;
     font-family: 'Outfit', sans-serif;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-weight: 600;
     width: 100%;
     cursor: pointer;
@@ -195,9 +197,9 @@ body.login-page-body {
     color: var(--login-text-dark);
     border: 1px solid var(--login-border);
     border-radius: 8px;
-    padding: 0.6rem 1rem;
+    padding: 0.55rem 1rem;
     font-family: 'Outfit', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 600;
     width: 100%;
     cursor: pointer;
@@ -216,9 +218,9 @@ body.login-page-body {
 /* Alerts */
 .login-alert {
     border-radius: 8px;
-    padding: 0.7rem 0.9rem;
-    font-size: 0.85rem;
-    margin-bottom: 1.25rem;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.82rem;
+    margin-bottom: 1rem;
     display: none;
     line-height: 1.4;
 }
@@ -243,10 +245,10 @@ body.login-page-body {
 .login-divider {
     display: flex;
     align-items: center;
-    margin: 1.25rem 0;
+    margin: 1rem 0;
     color: #94a3b8;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.72rem;
+    font-weight: 700;
     letter-spacing: 0.05em;
 }
 
@@ -258,49 +260,15 @@ body.login-page-body {
 }
 
 .login-divider span {
-    padding: 0 0.75rem;
+    padding: 0 0.65rem;
 }
 
 /* Footer Links */
 .login-footer {
     text-align: center;
-    margin-top: 1.5rem;
-    font-size: 0.85rem;
+    margin-top: 1.15rem;
+    font-size: 0.82rem;
     color: var(--login-text-muted);
-}
-
-/* Modal styling */
-.login-modal-content {
-    background: #ffffff;
-    border: 1px solid var(--login-border);
-    border-radius: 12px;
-    box-shadow: 0 12px 36px rgba(44, 79, 124, 0.12);
-    color: var(--login-text-dark);
-}
-
-.login-modal-header {
-    border-bottom: 1px solid #eef3f7;
-    padding: 1rem 1.25rem;
-}
-
-.login-modal-title {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    color: var(--login-slate);
-    font-size: 1.15rem;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.login-modal-body {
-    padding: 1.25rem;
-}
-
-.login-modal-footer {
-    border-top: 1px solid #eef3f7;
-    padding: 0.85rem 1.25rem;
 }
 
 /* CAPTCHA Styles */
@@ -308,18 +276,18 @@ body.login-page-body {
     background: #f0f7fd;
     border: 1px solid var(--login-border);
     border-radius: 8px;
-    padding: 0.75rem;
+    padding: 0.65rem;
 }
 
 .captcha-canvas-wrap {
-    background: #ffffff;
-    border: 1px solid var(--login-border);
+    background: #e0f2fe;
+    border: 1.5px solid #94a3b8;
     border-radius: 6px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 46px;
-    min-width: 160px;
+    min-height: 44px;
+    min-width: 150px;
     overflow: hidden;
 }
 
@@ -329,13 +297,73 @@ body.login-page-body {
     cursor: pointer;
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 480px) {
-    body.login-page-body {
-        padding: 0.75rem;
-    }
-    .login-card, .register-card {
-        padding: 1.5rem 1.25rem !important;
-    }
+/* Password Strength Indicator */
+.password-strength-container {
+    margin-top: 0.4rem;
+    margin-bottom: 0.5rem;
+    background: #f8fbfe;
+    border: 1px solid var(--login-border);
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
 }
 
+.password-strength-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+}
+
+.strength-title {
+    color: var(--login-text-muted);
+    font-weight: 600;
+}
+
+.strength-label {
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.strength-label.weak { color: #dc2626; }
+.strength-label.medium { color: #d97706; }
+.strength-label.strong { color: #059669; }
+
+.password-strength-bars {
+    display: flex;
+    gap: 4px;
+    height: 5px;
+    margin-bottom: 0.35rem;
+}
+
+.strength-bar-segment {
+    flex: 1;
+    height: 100%;
+    background-color: #cbd5e1;
+    border-radius: 3px;
+    transition: background-color 0.25s ease;
+}
+
+.strength-bar-segment.active-weak { background-color: #dc2626 !important; }
+.strength-bar-segment.active-medium { background-color: #d97706 !important; }
+.strength-bar-segment.active-strong { background-color: #059669 !important; }
+
+.strength-feedback {
+    font-size: 0.74rem;
+    color: #64748b;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.strength-feedback.weak { color: #b91c1c; }
+.strength-feedback.medium { color: #92400e; }
+.strength-feedback.strong { color: #065f46; }
+
+@media (max-width: 540px) {
+    .login-card, .register-card {
+        padding: 1.5rem 1.25rem;
+        margin: 0.5rem auto;
+    }
+}

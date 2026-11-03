@@ -64,28 +64,23 @@ function initSharedLogout() {
  * Automatically sets the 'active' class on the matching sidebar link
  */
 function highlightCurrentNavLink() {
-    const currentPath = window.location.pathname.split('/').pop().toLowerCase() || 'dashboard.html';
+    const currentFile = window.location.pathname.split('/').pop().toLowerCase() || 'dashboard.html';
+    const currentHash = window.location.hash.toLowerCase();
     const navLinks = document.querySelectorAll('.nav-link-rg');
 
-    if (currentPath === 'dashboard.html') {
-        const hash = window.location.hash;
-        if (hash) {
-            const hashLink = document.querySelector(`.sidebar-menu a[href="${hash}"]`);
-            if (hashLink) {
-                navLinks.forEach(l => l.classList.remove('active'));
-                hashLink.classList.add('active');
-            }
-        }
-        return;
-    }
-
     navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && href.toLowerCase() === currentPath) {
+        link.classList.remove('active');
+        const href = (link.getAttribute('href') || '').toLowerCase();
+
+        if (currentHash.includes('results') && href.includes('#results')) {
+            link.classList.add('active');
+        } else if (!currentHash.includes('results') && !href.includes('#') && (href === currentFile || href.endsWith('/' + currentFile))) {
             link.classList.add('active');
         }
     });
 }
+
+window.addEventListener('hashchange', highlightCurrentNavLink);
 
 /**
  * Retrieves authenticated user details from backend GET /api/auth/me

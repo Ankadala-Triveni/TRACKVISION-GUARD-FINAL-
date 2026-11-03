@@ -11,8 +11,8 @@
  * - Integration with persistent Maintenance Work Orders
  */
 
-var API_URL = (window.RAILGUARD_CONFIG && window.RAILGUARD_CONFIG.API_URL) ? window.RAILGUARD_CONFIG.API_URL : 'http://localhost:8080/api';
-var token = localStorage.getItem('token');
+const API_URL = 'http://localhost:8080/api';
+const token = localStorage.getItem('token');
 
 if (!token) {
     window.location.href = 'login.html';
@@ -94,6 +94,32 @@ function initUploadAndInspection() {
     const progressText = document.getElementById('execution-progress-text');
     const alertError = document.getElementById('alert-error');
     const alertSuccess = document.getElementById('alert-success');
+
+    // 0. Auto-populate from Defect Map query params (?section=...&zone=...&state=...)
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const secParam = urlParams.get('section');
+        const zoneParam = urlParams.get('zone');
+        const stateParam = urlParams.get('state');
+        if (secParam || zoneParam) {
+            const banner = document.getElementById('map-prefill-banner');
+            const titleEl = document.getElementById('map-prefill-title');
+            const descEl = document.getElementById('map-prefill-desc');
+            const secIn = document.getElementById('trackSection');
+            const zoneIn = document.getElementById('railwayZone');
+            const locIn = document.getElementById('location');
+            if (secIn && secParam) secIn.value = secParam;
+            if (zoneIn && zoneParam) zoneIn.value = zoneParam;
+            if (locIn && stateParam) locIn.value = `${stateParam} Corridor Section`;
+            if (banner) {
+                if (titleEl) titleEl.innerText = `Track Section Loaded: ${secParam || ''}`;
+                if (descEl) descEl.innerText = `Zone: ${zoneParam || 'Indian Railways'} (${stateParam || 'India'}). Select a railway track photo below to run YOLO11 V3 inspection.`;
+                banner.classList.remove('d-none');
+            }
+        }
+    } catch (e) {
+        console.warn('URL params prefill:', e);
+    }
 
     // Trigger file chooser button
     btnChooseFile?.addEventListener('click', (e) => {
@@ -244,15 +270,7 @@ function initUploadAndInspection() {
         alertError.classList.add('d-none');
         alertSuccess.classList.add('d-none');
 
-        // 1. If no image is selected, auto-select a sample image so inspection ALWAYS proceeds
-        if (!selectedFile) {
-            try {
-                await loadSampleImage('sample_broken_rail.jpg', 'Broken Rail / Crack');
-            } catch (e) {
-                console.warn('Auto sample load fallback:', e);
-            }
-        }
-
+        // 1. Validate Selected Image (Primary Action)
         if (!selectedFile) {
             alertError.innerHTML = '<i class="bi bi-image-fill me-2"></i>Please select or drag-and-drop a <strong>Railway Track Image</strong> before executing the inspection.';
             alertError.classList.remove('d-none');
@@ -345,9 +363,9 @@ function initUploadAndInspection() {
             renderInspectionResults(analysisData);
 
         } catch (err) {
-            console.warn('Backend inspection API notice, transitioning to completed analysis view:', err);
-            // If backend throws an error or token expired, seamlessly load full demonstration inspection
-            loadDefaultSampleInspection();
+            alertError.innerText = err.message || 'An unexpected error occurred during inspection.';
+            alertError.classList.remove('d-none');
+            alertError.scrollIntoView({ behavior: 'smooth' });
         } finally {
             btnExecute.disabled = false;
             executeSpinner.classList.add('d-none');
@@ -372,9 +390,6 @@ function initUploadAndInspection() {
         if (lngIn) lngIn.value = '';
         clearSelectedFile();
 
-        // Clear hash from URL so clicking "Inspection Results" opens cleanly
-        try { history.replaceState(null, null, 'inspection.html'); } catch(e) {}
-
         document.getElementById('results-card').classList.add('d-none');
         document.getElementById('inspection-form-container').classList.remove('d-none');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -383,22 +398,79 @@ function initUploadAndInspection() {
     document.getElementById('btn-analyze-another')?.addEventListener('click', resetInspectionView);
     document.getElementById('btn-new-inspection-repeat')?.addEventListener('click', resetInspectionView);
 
-    // Sidebar "Inspection Results" Button Click Handler
-    document.getElementById('nav-results-link')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        try { history.replaceState(null, null, 'inspection.html#results'); } catch(e) {}
-        showInspectionResultsView();
+    // Save Comparison Screenshot button listener
+    document.getElementById('btn-save-comparison-screenshot')?.addEventListener('click', () => {
+        captureComparisonScreenshot();
     });
+
+    // Save Defect Inspection Screenshot button listener
+    document.getElementById('btn-save-defect-screenshot')?.addEventListener('click', () => {
+        captureDefectScreenshot();
+    });
+
+    // Seamless Sidebar Navigation between New Inspection and Inspection Results
+    const navResults = document.getElementById('nav-results-link');
+    const navNew = document.querySelector('.sidebar-menu a[href="inspection.html"]');
+
+    navNew?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        navNew.classList.add('active');
+        navResults?.classList.remove('active');
+        window.history.replaceState(null, '', 'inspection.html');
+    });
+
+    navResults?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const resultsCard = document.getElementById('results-card');
+        if (resultsCard) {
+            if (resultsCard.classList.contains('d-none')) {
+                await checkUrlInspectionId();
+            }
+            resultsCard.classList.remove('d-none');
+            resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        navResults.classList.add('active');
+        navNew?.classList.remove('active');
+        window.history.replaceState(null, '', 'inspection.html#results');
+    });
+
+    // Scrollspy: update sidebar active state dynamically as user scrolls
+    window.addEventListener('scroll', () => {
+        const resultsCard = document.getElementById('results-card');
+        if (!resultsCard || resultsCard.classList.contains('d-none')) return;
+        const rect = resultsCard.getBoundingClientRect();
+        if (rect.top <= 250) {
+            navResults?.classList.add('active');
+            navNew?.classList.remove('active');
+        } else {
+            navNew?.classList.add('active');
+            navResults?.classList.remove('active');
+        }
+    }, { passive: true });
 }
 
 /**
  * Renders complete inspection report and visual canvas
+ * Keeps both upload section and results accessible via scrolling
  */
 async function renderInspectionResults(data) {
     activeInspectionData = data;
     const formContainer = document.getElementById('inspection-form-container');
-    if (formContainer) formContainer.classList.add('d-none');
-    document.getElementById('results-card').classList.remove('d-none');
+    if (formContainer) formContainer.classList.remove('d-none'); // KEEP UPLOAD FORM VISIBLE FOR SCROLLING
+    const resultsCard = document.getElementById('results-card');
+    if (resultsCard) {
+        resultsCard.classList.remove('d-none');
+        window.history.replaceState(null, '', '#results');
+        // Smoothly scroll down directly to the Inspection Results
+        setTimeout(() => {
+            resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
+    }
+
+    // Highlight Inspection Results in sidebar
+    document.getElementById('nav-results-link')?.classList.add('active');
+    document.querySelector('.sidebar-menu a[href="inspection.html"]')?.classList.remove('active');
 
     // Header info
     document.getElementById('res-inspection-num').innerText = data.inspectionNumber;
@@ -1126,7 +1198,7 @@ async function loadEmbeddedHistory() {
     if (!tbody) return;
 
     try {
-        var token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/inspections`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1455,8 +1527,6 @@ async function fetchInspectionImageBlob(inspectionId) {
 async function populateComparisonPanel(currentInspection) {
     const compPanel = document.getElementById('comparison-panel');
     if (!compPanel) return;
-
-    // Ensure comparison panel is always displayed
     compPanel.classList.remove('d-none');
 
     const currMeta = document.getElementById('curr-inspection-meta');
@@ -1467,21 +1537,24 @@ async function populateComparisonPanel(currentInspection) {
     const prevImg = document.getElementById('prev-inspection-img');
     const deltaBadge = document.getElementById('comparison-delta-badge');
 
-    const currCount = (currentInspection.detections || []).length;
-    if (currDate) currDate.innerText = formatDate(currentInspection.createdAt || currentInspection.inspectionDate) || '02 Nov 2026, 00:10';
-    if (currMeta) currMeta.innerText = `${currentInspection.trackSection || 'Track Corridor'} · Defect Count: ${currCount}`;
+    if (currImg) {
+        currImg.onerror = () => { currImg.src = '../samples/sample_joint_defect.jpg'; };
+    }
+    if (prevImg) {
+        prevImg.onerror = () => { prevImg.src = '../samples/sample_clean_track.jpg'; };
+    }
 
-    // Set current image with authenticated blob, selectedFile, or fallback sample
+    const currCount = (currentInspection.detections || []).length;
+    if (currDate) currDate.innerText = formatDate(currentInspection.createdAt || currentInspection.inspectionDate) || 'Active Inspection';
+    if (currMeta) currMeta.innerText = `${currentInspection.trackSection || 'Section Corridor'} · Defect Count: ${currCount}`;
+
+    // Set current image with authenticated blob or selectedFile
     if (selectedFile) {
         if (currImg) currImg.src = URL.createObjectURL(selectedFile);
-    } else if (currentInspection.id && currentInspection.id !== 999) {
+    } else if (currentInspection.id) {
         fetchInspectionImageBlob(currentInspection.id).then(url => {
             if (url && currImg) currImg.src = url;
         });
-    } else if (currentInspection.imageSrc) {
-        if (currImg) currImg.src = currentInspection.imageSrc;
-    } else if (currImg) {
-        currImg.src = '../samples/sample_joint_defect.jpg';
     }
 
     try {
@@ -1495,9 +1568,9 @@ async function populateComparisonPanel(currentInspection) {
             // Find another inspection that isn't the current one
             const prev = (Array.isArray(list) ? list : []).find(i => i.id !== currentInspection.id);
             if (prev) {
-                if (prevDate) prevDate.innerText = formatDate(prev.createdAt || prev.inspectionDate) || 'Prior Baseline Scan';
+                if (prevDate) prevDate.innerText = formatDate(prev.createdAt || prev.inspectionDate) || 'Previous Baseline';
                 const prevCount = (prev.detections || []).length;
-                if (prevMeta) prevMeta.innerText = `${prev.trackSection || 'Baseline Milestone'} · Defect Count: ${prevCount} (${prev.riskLevel || 'LOW'})`;
+                if (prevMeta) prevMeta.innerText = `${prev.trackSection || 'Track Section'} · Defect Count: ${prevCount} (${prev.riskLevel || 'LOW'})`;
                 fetchInspectionImageBlob(prev.id).then(url => {
                     if (url && prevImg) prevImg.src = url;
                 });
@@ -1525,10 +1598,7 @@ async function populateComparisonPanel(currentInspection) {
     // Default clean baseline fallback
     if (prevDate) prevDate.innerText = 'Prior Baseline Scan';
     if (prevMeta) prevMeta.innerText = 'Baseline Milestone · Defect Count: 0 (Normal)';
-    if (prevImg) {
-        prevImg.src = '../samples/sample_clean_track.jpg';
-        prevImg.onerror = () => { prevImg.src = '../samples/sample_clean.jpg'; };
-    }
+    if (prevImg) prevImg.src = '../samples/sample_clean_track.jpg';
     if (deltaBadge) {
         deltaBadge.style.background = currCount > 0 ? '#ef4444' : '#10b981';
         deltaBadge.innerText = currCount > 0 ? `+${currCount} New Defect(s)` : 'Normal (No Delta)';
@@ -1536,11 +1606,183 @@ async function populateComparisonPanel(currentInspection) {
 }
 
 /**
+ * Feature: Captures and downloads Before vs After Track Inspection Comparison as PNG Screenshot
+ */
+async function captureComparisonScreenshot() {
+    const currImg = document.getElementById('curr-inspection-img');
+    const prevImg = document.getElementById('prev-inspection-img');
+    const prevDate = document.getElementById('prev-inspection-date')?.innerText || 'Prior Baseline';
+    const currDate = document.getElementById('curr-inspection-date')?.innerText || 'Active Scan';
+    const deltaText = document.getElementById('comparison-delta-badge')?.innerText || 'Delta Evaluated';
+    const inspNum = activeInspectionData?.inspectionNumber || 'Inspection';
+    const sectionName = activeInspectionData?.trackSection || 'Railway Corridor Milestone';
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 680;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#0a192f';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Header bar
+    ctx.fillStyle = '#1d4ed8';
+    ctx.fillRect(0, 0, canvas.width, 82);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('TRACKVISION GUARD — Before vs After Track Inspection Comparison', 30, 42);
+
+    ctx.fillStyle = '#93c5fd';
+    ctx.font = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(`Track Section: ${sectionName} | Record: ${inspNum} | Timestamp: ${new Date().toLocaleString()}`, 30, 68);
+
+    // Function to draw image in bordered card
+    function drawTrackCard(imgEl, x, y, w, h, title, subtitle) {
+        ctx.fillStyle = '#ffffff';
+        if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, 12);
+            ctx.fill();
+        } else {
+            ctx.fillRect(x, y, w, h);
+        }
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(title, x + 16, y + 26);
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(subtitle, x + 16, y + 46);
+
+        const innerX = x + 12;
+        const innerY = y + 58;
+        const innerW = w - 24;
+        const innerH = h - 70;
+
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(innerX, innerY, innerW, innerH);
+
+        if (imgEl && imgEl.complete && imgEl.naturalWidth > 0) {
+            try {
+                ctx.drawImage(imgEl, innerX, innerY, innerW, innerH);
+            } catch (err) {
+                ctx.fillStyle = '#1e3a5f';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillText('Railway Track Inspection Photo', innerX + 24, innerY + innerH / 2);
+            }
+        } else {
+            ctx.fillStyle = '#1e3a5f';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText('Railway Track Inspection Photo', innerX + 24, innerY + innerH / 2);
+        }
+    }
+
+    // Left Card: Baseline / Past Inspection
+    drawTrackCard(prevImg, 30, 105, 520, 485, 'Baseline / Past Inspection', `Inspection Date: ${prevDate}`);
+
+    // Right Card: Current Scan
+    drawTrackCard(currImg, 650, 105, 520, 485, 'Current Inspection (Active Scan)', `Analyzed: ${currDate}`);
+
+    // Middle Badge
+    const badgeX = 560;
+    const badgeY = 320;
+    const badgeW = 80;
+    const badgeH = 48;
+    ctx.fillStyle = deltaText.includes('New') ? '#ef4444' : (deltaText.includes('Rectified') ? '#10b981' : '#2563eb');
+    if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 8);
+        ctx.fill();
+    } else {
+        ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+    }
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('DELTA', badgeX + badgeW / 2, badgeY + 18);
+    ctx.font = 'bold 10px sans-serif';
+    ctx.fillText(deltaText.length > 11 ? deltaText.substring(0, 11) : deltaText, badgeX + badgeW / 2, badgeY + 34);
+    ctx.textAlign = 'left';
+
+    // Footer bar
+    ctx.fillStyle = '#071322';
+    ctx.fillRect(0, 615, canvas.width, 65);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('Official Railway Safety Monitoring Record • RDSO USFD & IRS T-12 Verification • Automated Vision Analytics', 30, 652);
+
+    // Save as PNG
+    const link = document.createElement('a');
+    link.download = `TrackVision_Comparison_${inspNum}_${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+window.captureComparisonScreenshot = captureComparisonScreenshot;
+
+/**
+ * Feature: Captures and downloads Defect Inspection Result Canvas as PNG Screenshot
+ */
+function captureDefectScreenshot() {
+    const defectCanvas = document.getElementById('defect-canvas');
+    if (!defectCanvas) {
+        alert('Inspection defect canvas is not available.');
+        return;
+    }
+    const inspNum = activeInspectionData?.inspectionNumber || 'Inspection';
+    const risk = activeInspectionData?.riskLevel || 'LOW';
+    const count = (activeInspectionData?.detections || []).length;
+    const sectionName = activeInspectionData?.trackSection || 'Track Milestone';
+
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = Math.max(defectCanvas.width, 800);
+    exportCanvas.height = defectCanvas.height + 110;
+    const ctx = exportCanvas.getContext('2d');
+
+    // Header bar
+    ctx.fillStyle = '#0f243e';
+    ctx.fillRect(0, 0, exportCanvas.width, 60);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(`TRACKVISION GUARD — YOLO11 V3 Inspection [${inspNum}]`, 16, 28);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(`Risk Level: ${risk} | Defects Detected: ${count} | Section: ${sectionName}`, 16, 48);
+
+    // Draw defect canvas centered
+    const offsetX = Math.floor((exportCanvas.width - defectCanvas.width) / 2);
+    ctx.drawImage(defectCanvas, offsetX, 60);
+
+    // Footer bar
+    ctx.fillStyle = '#0f243e';
+    ctx.fillRect(0, exportCanvas.height - 50, exportCanvas.width, 50);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(`TrackVision Guard AI Detection Engine • Sub-second Localization • Timestamp: ${new Date().toLocaleString()}`, 16, exportCanvas.height - 20);
+
+    // Save as PNG
+    const link = document.createElement('a');
+    link.download = `TrackVision_Defect_Analysis_${inspNum}_${Date.now()}.png`;
+    link.href = exportCanvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+window.captureDefectScreenshot = captureDefectScreenshot;
+
+/**
  * Downloads the official PDF inspection report from backend
  */
 async function downloadInspectionPdf(inspectionId) {
     try {
-        var token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/inspections/${inspectionId}/pdf`, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -1566,96 +1808,6 @@ async function downloadInspectionPdf(inspectionId) {
 window.downloadInspectionPdf = downloadInspectionPdf;
 
 /**
- * Instantly shows the complete inspection results view
- */
-async function showInspectionResultsView() {
-    const formContainer = document.getElementById('inspection-form-container');
-    const resultsCard = document.getElementById('results-card');
-    if (formContainer) formContainer.classList.add('d-none');
-    if (resultsCard) resultsCard.classList.remove('d-none');
-
-    // If an inspection is already active, render it
-    if (activeInspectionData) {
-        renderInspectionResults(activeInspectionData);
-        resultsCard.scrollIntoView({ behavior: 'smooth' });
-        return;
-    }
-
-    // Try to load latest completed inspection from server
-    try {
-        const curToken = localStorage.getItem('token') || token;
-        const res = await fetch(`${API_URL}/inspections`, {
-            headers: { 'Authorization': `Bearer ${curToken}` }
-        });
-        if (res.ok) {
-            const list = await res.json();
-            if (Array.isArray(list) && list.length > 0) {
-                list.sort((a, b) => b.id - a.id);
-                const latestRes = await fetch(`${API_URL}/inspections/${list[0].id}`, {
-                    headers: { 'Authorization': `Bearer ${curToken}` }
-                });
-                if (latestRes.ok) {
-                    const data = await latestRes.json();
-                    renderInspectionResults(data);
-                    resultsCard.scrollIntoView({ behavior: 'smooth' });
-                    return;
-                }
-            }
-        }
-    } catch (e) {
-        console.warn('Could not fetch latest inspection:', e);
-    }
-
-    // Fallback: load instant sample inspection (Broken Rail with detections)
-    loadDefaultSampleInspection();
-}
-window.showInspectionResultsView = showInspectionResultsView;
-
-/**
- * Fallback sample inspection data for instant preview
- */
-function loadDefaultSampleInspection() {
-    const sampleData = {
-        id: 999,
-        inspectionNumber: 'INS-20261102-03E4CB',
-        status: 'COMPLETED',
-        riskLevel: 'CRITICAL',
-        riskScore: 85.0,
-        modelVersion: 'YOLO11-RailGuard-v3.0',
-        trackSection: 'Northern Corridor - KM 12.5',
-        railwayZone: 'Northern Railway',
-        inspectionDate: new Date().toISOString(),
-        imageSrc: '../samples/sample_broken_rail.jpg',
-        detections: [
-            {
-                id: 1,
-                defectClass: 'Broken Rail',
-                severity: 'CRITICAL',
-                confidence: 0.968,
-                boundingBox: { xMin: 60, yMin: 120, xMax: 320, yMax: 380 }
-            },
-            {
-                id: 2,
-                defectClass: 'Head Checks',
-                severity: 'MEDIUM',
-                confidence: 0.842,
-                boundingBox: { xMin: 340, yMin: 220, xMax: 480, yMax: 310 }
-            },
-            {
-                id: 3,
-                defectClass: 'Joint Bar Defect',
-                severity: 'HIGH',
-                confidence: 0.915,
-                boundingBox: { xMin: 210, yMin: 180, xMax: 310, yMax: 290 }
-            }
-        ]
-    };
-    activeInspectionData = sampleData;
-    renderInspectionResults(sampleData);
-    document.getElementById('results-card')?.scrollIntoView({ behavior: 'smooth' });
-}
-
-/**
  * Auto-loads inspection if ?id=123 is present in the URL query string
  * or loads latest completed inspection if #results hash is present
  */
@@ -1665,15 +1817,40 @@ async function checkUrlInspectionId() {
 
     // If user clicked "Inspection Results" or visited #results
     if (!inspId && window.location.hash.includes('results')) {
-        showInspectionResultsView();
-        return;
+        if (activeInspectionData) {
+            const formContainer = document.getElementById('inspection-form-container');
+            if (formContainer) formContainer.classList.remove('d-none');
+            const resultsCard = document.getElementById('results-card');
+            if (resultsCard) {
+                resultsCard.classList.remove('d-none');
+                resultsCard.scrollIntoView({ behavior: 'smooth' });
+            }
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_URL}/inspections`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const list = await res.json();
+                if (Array.isArray(list) && list.length > 0) {
+                    // Sort by id desc to get the most recent inspection
+                    list.sort((a, b) => b.id - a.id);
+                    inspId = list[0].id;
+                }
+            }
+        } catch (e) {
+            console.warn('Could not fetch latest inspection for #results:', e);
+        }
     }
 
     if (inspId) {
         try {
-            const curToken = localStorage.getItem('token') || token;
+            const token = localStorage.getItem('token');
             const res = await fetch(`${API_URL}/inspections/${inspId}`, {
-                headers: { 'Authorization': `Bearer ${curToken}` }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
                 const data = await res.json();
@@ -1691,5 +1868,6 @@ async function checkUrlInspectionId() {
 
 // Listen to hash changes so clicking "Inspection Results" opens immediately
 window.addEventListener('hashchange', checkUrlInspectionId);
+
 
 

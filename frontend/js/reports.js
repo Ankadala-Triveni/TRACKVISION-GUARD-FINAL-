@@ -3,8 +3,8 @@
  * Queries authentic records from MySQL and exports CSV reports and printable PDF logs.
  */
 
-var API_URL = (window.RAILGUARD_CONFIG && window.RAILGUARD_CONFIG.API_URL) ? window.RAILGUARD_CONFIG.API_URL : 'http://localhost:8080/api';
-var token = localStorage.getItem('token');
+const API_URL = 'http://localhost:8080/api';
+const token = localStorage.getItem('token');
 
 let cachedInspections = [];
 let cachedTasks = [];
